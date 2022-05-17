@@ -35,6 +35,9 @@ import {
 import AppLoading from "expo-app-loading";
 import NavBar from "../Components/NavBar";
 import Header from "../Components/Header";
+import { styleProps } from "react-native-web/dist/cjs/modules/forwardedProps";
+import AnnouncementModal from "../Components/AnnouncementModal";
+import { Provider } from "react-native-paper";
 
 export default function Home() {
   let [fontsLoaded] = useFonts({
@@ -83,7 +86,7 @@ export default function Home() {
               />
               <Text style={styles.headerText}>Announcements</Text>
             </View>
-            <View style={styles.announcementView}></View>
+            <AnnouncementModal />
           </View>
           <View style={styles.sectionContainer}>
             <View style={styles.headerContainer}>
@@ -136,7 +139,6 @@ const width = Dimensions.get("window").width;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: "#F6F4F4",
   },
 
@@ -174,6 +176,33 @@ const styles = StyleSheet.create({
     height: 130,
     borderRadius: 20,
     marginLeft: 25,
+  },
+
+  announcementTitle: {
+    fontFamily: "Montserrat_700Bold",
+    color: "white",
+    fontSize: 16,
+    marginLeft: 15,
+    marginTop: 10,
+  },
+
+  infoContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: 25,
+    marginVertical: 8,
+  },
+
+  infoIcon: {
+    tintColor: "white",
+    height: 16,
+    width: 16,
+  },
+
+  infoText: {
+    color: "white",
+    fontFamily: "Montserrat_700Bold",
+    fontSize: 12,
   },
 
   eventsBtn: {

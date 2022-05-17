@@ -4,6 +4,8 @@ import { initializeApp } from "@firebase/app";
 import { getAuth, onAuthStateChanged } from "@firebase/auth";
 import { firebaseConfig } from "../config";
 
+// DO GOOGLE SIGN IN HERE
+
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 
