@@ -95,5 +95,6 @@ const styles = StyleSheet.create({
     color: "white",
     fontFamily: "Montserrat_700Bold",
     fontSize: 12,
+    marginLeft: 10,
   },
 });

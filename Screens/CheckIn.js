@@ -35,7 +35,8 @@ import {
 } from "@expo-google-fonts/montserrat";
 import Header from "../Components/Header";
 import AppLoading from "expo-app-loading";
-import { Portal, Provider, Modal } from "react-native-paper";
+import EventView from "../Components/EventView";
+import { Portal, ActivityIndicator, Modal } from "react-native-paper";
 
 const coords = [
   {
@@ -104,21 +105,23 @@ const coords = [
   {
     name: "Atlass",
     borders: [
-      [42.2495095842001, -87.89248488285926],
-      [42.249671855977276, -87.89209836316763],
-      [42.24878932022073, -87.89187337409338],
-      [42.24898718011736, -87.89147531650048],
+      [42.24950508874197, -87.89256050612069],
+      [42.2497355831767, -87.89199106674774],
+      [42.24876393518291, -87.89186031933885],
+      [42.24896896306967, -87.89138894052255],
     ],
   },
 ];
 
-// start location
-function checkInGame() {}
+// start location + timer component + check to see if there is a game or not
+function checkInGame() {
+  return true;
+}
 
 export default function CheckIn() {
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
-  const [position, setPosition] = useState("Nowhere");
+  const [position, setPosition] = useState("");
   const [visible, setVisible] = useState(false);
   const [inLocation, setInLocation] = useState(null);
 
@@ -151,16 +154,21 @@ export default function CheckIn() {
 
   useEffect(() => {
     (async () => {
+      console.log(location);
+
       try {
         let { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
-          setErrorMsg("Permission to access location was denied");
+          alert("Permission to access foreground location was denied");
           return;
         }
-
-        let location = await Location.getCurrentPositionAsync({});
-        setLocation(location);
-        checkLocation();
+        let { status2 } = await Location.requestBackgroundPermissionsAsync();
+        if (status2 !== "granted") {
+          alert("Permission to access background location was denied");
+          return;
+        }
+        let loc = await Location.getCurrentPositionAsync({});
+        setLocation(loc);
       } catch (error) {
         let status = Location.getProviderStatusAsync();
         if (!(await status).locationServicesEnabled) {
@@ -174,16 +182,17 @@ export default function CheckIn() {
   if (errorMsg) {
     text = errorMsg;
   } else if (location) {
-    // text = JSON.stringify(location);
-    text = position;
+    text = JSON.stringify(location);
   }
 
   // return true if user is in a registered location, false otherwise
   function checkLocation() {
+    console.log(location);
     // re run the check location
     // first hide location with a text saying "loading..."
     // then renders location
-    for (let i = 0; i < coords.length; i++) {
+
+    /* for (let i = 0; i < coords.length; i++) {
       console.log(location.coords.latitude);
       console.log(location.coords.longitude);
       if (
@@ -200,7 +209,7 @@ export default function CheckIn() {
         console.log("is not inside any registered location");
         setPosition("Not in any registered location");
       }
-    }
+    } */
     setInLocation(false);
     return false;
   }
@@ -252,31 +261,41 @@ export default function CheckIn() {
               />
               <Text style={styles.headerText}>Event</Text>
             </View>
-            <View style={styles.eventStart}>
-              <Text>{position}</Text>
-            </View>
           </View>
 
           {inLocation === true ? (
-            <TouchableOpacity onPress={checkInGame}>
-              <View style={styles.checkInBtn}>
-                <Image
-                  style={styles.checkInIcon}
-                  source={require("../assets/icons8-paper-plane-48.png")}
-                />
-                <Text style={styles.checkInText}>Check In</Text>
-              </View>
-            </TouchableOpacity>
+            <View>
+              <EventView />
+              <TouchableOpacity onPress={checkInGame}>
+                <View style={styles.checkInBtn}>
+                  <Image
+                    style={styles.checkInIcon}
+                    source={require("../assets/icons8-paper-plane-48.png")}
+                  />
+                  <Text style={styles.checkInText}>Check In</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
           ) : (
-            <TouchableOpacity onPress={checkLocation}>
-              <View style={styles.checkInBtn}>
-                <Image
-                  style={styles.checkInIcon}
-                  source={require("../assets/icons8-paper-plane-48.png")}
+            <View>
+              <View style={styles.eventView}>
+                <ActivityIndicator
+                  animating={inLocation === null}
+                  color={"#F37121"}
+                  size={"large"}
                 />
-                <Text style={styles.checkInText}>Get Location</Text>
+                {/* <Text>{position}</Text> */}
               </View>
-            </TouchableOpacity>
+              <TouchableOpacity onPress={checkLocation}>
+                <View style={styles.checkInBtn}>
+                  <Image
+                    style={styles.checkInIcon}
+                    source={require("../assets/icons8-paper-plane-48.png")}
+                  />
+                  <Text style={styles.checkInText}>Get Location</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
           )}
         </ScrollView>
       </SafeAreaView>
@@ -323,7 +342,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
 
-  eventStart: {
+  eventView: {
     width: width - 50,
     height: 400,
     backgroundColor: "white",
@@ -334,6 +353,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.7,
     shadowRadius: 20,
     marginBottom: 20,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   checkInBtn: {
