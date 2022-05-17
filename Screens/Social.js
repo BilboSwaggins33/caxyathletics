@@ -10,12 +10,30 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import "react-native-gesture-handler";
 import { createStackNavigator } from "@react-navigation/stack";
 import Header from "../Components/Header";
+import { Button } from "react-native-paper"
+import { getAuth, signOut } from "firebase/auth";
+
 
 export default function Social({ navigation }) {
+  const auth = getAuth();
+
+  const SignOutButton = () => (
+    <Button uppercase={false} style={{ backgroundColor: '#F37121' }} labelStyle={{ fontFamily: "Montserrat_600SemiBold" }} mode="contained" onPress={() => {
+      signOut(auth).then(() => {
+        navigation.navigate('Login')
+        // Sign-out successful.
+      }).catch((error) => {
+        // An error happened.
+      });
+    }}>
+      Sign Out
+    </Button>
+  );
   return (
     <SafeAreaView style={styles.container}>
       <Header />
       <View>
+        <SignOutButton />
         <Text>Social</Text>
       </View>
     </SafeAreaView>

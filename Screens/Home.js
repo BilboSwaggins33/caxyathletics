@@ -35,8 +35,10 @@ import {
 import AppLoading from "expo-app-loading";
 import NavBar from "../Components/NavBar";
 import Header from "../Components/Header";
-
+import { getAuth, signOut } from "firebase/auth"
 export default function Home() {
+
+  const auth = getAuth()
   let [fontsLoaded] = useFonts({
     Montserrat_100Thin,
     Montserrat_200ExtraLight,

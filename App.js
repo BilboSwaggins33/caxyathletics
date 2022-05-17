@@ -10,8 +10,9 @@ import Social from "./Screens/Social";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createStore } from "redux";
 import Header from "./Components/Header";
-import { firebaseConfig } from "./config";
-import Authentication from "./Screens/Authentication";
+import Loading from "./Screens/Loading";
+import Login from "./Screens/Login"
+import firebaseConfig from "./config"
 
 const initialState = {
   user: null,
@@ -31,13 +32,18 @@ export default function App() {
       <NavigationContainer>
         <Stack.Navigator>
           <Stack.Screen
-            name="Authentication"
-            component={Authentication}
+            name="Loading"
+            component={Loading}
             options={{ headerShown: false }}
           />
           <Stack.Screen
             name="Main"
             component={NavBar}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Login"
+            component={Login}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>
