@@ -7,7 +7,6 @@ import {
   Dimensions,
   Button,
   TouchableOpacity,
-  Modal,
   Pressable,
   Image,
 } from "react-native";
@@ -36,6 +35,8 @@ import {
 } from "@expo-google-fonts/montserrat";
 import Header from "../Components/Header";
 import AppLoading from "expo-app-loading";
+import EventView from "../Components/EventView";
+import { Portal, ActivityIndicator, Modal } from "react-native-paper";
 
 const coords = [
   {
@@ -101,13 +102,28 @@ const coords = [
       [42.24810595767858, -87.89043219861462],
     ],
   },
+  {
+    name: "Atlass",
+    borders: [
+      [42.24950508874197, -87.89256050612069],
+      [42.2497355831767, -87.89199106674774],
+      [42.24876393518291, -87.89186031933885],
+      [42.24896896306967, -87.89138894052255],
+    ],
+  },
 ];
+
+// start location + timer component + check to see if there is a game or not
+function checkInGame() {
+  return true;
+}
 
 export default function CheckIn() {
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
-  const [position, setPosition] = useState("Nowhere");
-  const [modalVisible, setModalVisible] = useState(false);
+  const [position, setPosition] = useState("");
+  const [visible, setVisible] = useState(false);
+  const [inLocation, setInLocation] = useState(null);
 
   let [fontsLoaded] = useFonts({
     Montserrat_100Thin,
@@ -130,18 +146,29 @@ export default function CheckIn() {
     Montserrat_900Black_Italic,
   });
 
+  const hideModal = () => {
+    setVisible(false);
+    setInLocation(null);
+  };
+  const containerStyle = { backgroundColor: "white", padding: 20 };
+
   useEffect(() => {
     (async () => {
+      console.log(location);
+
       try {
         let { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
-          setErrorMsg("Permission to access location was denied");
+          alert("Permission to access foreground location was denied");
           return;
         }
-
-        let location = await Location.getCurrentPositionAsync({});
-        setLocation(location);
-        checkLocation();
+        let { status2 } = await Location.requestBackgroundPermissionsAsync();
+        if (status2 !== "granted") {
+          alert("Permission to access background location was denied");
+          return;
+        }
+        let loc = await Location.getCurrentPositionAsync({});
+        setLocation(loc);
       } catch (error) {
         let status = Location.getProviderStatusAsync();
         if (!(await status).locationServicesEnabled) {
@@ -155,15 +182,17 @@ export default function CheckIn() {
   if (errorMsg) {
     text = errorMsg;
   } else if (location) {
-    // text = JSON.stringify(location);
-    text = position;
+    text = JSON.stringify(location);
   }
 
+  // return true if user is in a registered location, false otherwise
   function checkLocation() {
+    console.log(location);
     // re run the check location
     // first hide location with a text saying "loading..."
     // then renders location
-    for (let i = 0; i < coords.length; i++) {
+
+    /* for (let i = 0; i < coords.length; i++) {
       console.log(location.coords.latitude);
       console.log(location.coords.longitude);
       if (
@@ -174,39 +203,15 @@ export default function CheckIn() {
       ) {
         console.log(`is inside ${coords[i].name}`);
         setPosition(coords[i].name);
-        break;
+        setInLocation(true);
+        return true;
       } else {
         console.log("is not inside any registered location");
         setPosition("Not in any registered location");
       }
-    }
-    notInside();
-  }
-
-  // pop up modal if user is not inside location or there is no game going on
-  function notInside() {
-    console.log("not inside function called");
-    return (
-      <Modal
-        animationType="fade"
-        // onShow={setPosition("Nowhere")}
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(!modalVisible);
-        }}
-      >
-        <View style={styles.modalView}>
-          <Text>
-            Sorry. You are not at one of the game locations or there is no game
-            scheduled right now.
-          </Text>
-          <Pressable onPress={() => setModalVisible(!modalVisible)}>
-            <Text> Close modal</Text>
-          </Pressable>
-        </View>
-      </Modal>
-    );
+    } */
+    setInLocation(false);
+    return false;
   }
 
   //current point - point (format: [latitude,longitude])
@@ -221,7 +226,6 @@ export default function CheckIn() {
         yi = vs[i][1];
       var xj = vs[j][0],
         yj = vs[j][1];
-
       var intersect =
         yi > y != yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
       if (intersect) inside = !inside;
@@ -235,6 +239,20 @@ export default function CheckIn() {
       <SafeAreaView style={styles.safe}>
         <ScrollView style={styles.scroll} stickyHeaderIndices={[0]}>
           <Header />
+          <Portal>
+            <Modal
+              visible={inLocation === false}
+              onDismiss={hideModal}
+              contentContainerStyle={containerStyle}
+            >
+              <View style={styles.modalView}>
+                <Text>
+                  Sorry. You are not at one of the game locations or there is no
+                  game scheduled right now.
+                </Text>
+              </View>
+            </Modal>
+          </Portal>
           <View style={styles.sectionContainer}>
             <View style={styles.headerContainer}>
               <Image
@@ -243,19 +261,42 @@ export default function CheckIn() {
               />
               <Text style={styles.headerText}>Event</Text>
             </View>
-            <View style={styles.eventStart}>
-              <Text>{position}</Text>
-            </View>
           </View>
-          <TouchableOpacity>
-            <View style={styles.checkInBtn}>
-              <Image
-                style={styles.checkInIcon}
-                source={require("../assets/icons8-paper-plane-48.png")}
-              />
-              <Text style={styles.checkInText}>Get Location</Text>
+
+          {inLocation === true ? (
+            <View>
+              <EventView />
+              <TouchableOpacity onPress={checkInGame}>
+                <View style={styles.checkInBtn}>
+                  <Image
+                    style={styles.checkInIcon}
+                    source={require("../assets/icons8-paper-plane-48.png")}
+                  />
+                  <Text style={styles.checkInText}>Check In</Text>
+                </View>
+              </TouchableOpacity>
             </View>
-          </TouchableOpacity>
+          ) : (
+            <View>
+              <View style={styles.eventView}>
+                <ActivityIndicator
+                  animating={inLocation === null}
+                  color={"#F37121"}
+                  size={"large"}
+                />
+                {/* <Text>{position}</Text> */}
+              </View>
+              <TouchableOpacity onPress={checkLocation}>
+                <View style={styles.checkInBtn}>
+                  <Image
+                    style={styles.checkInIcon}
+                    source={require("../assets/icons8-paper-plane-48.png")}
+                  />
+                  <Text style={styles.checkInText}>Get Location</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          )}
         </ScrollView>
       </SafeAreaView>
     );
@@ -301,7 +342,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
 
-  eventStart: {
+  eventView: {
     width: width - 50,
     height: 400,
     backgroundColor: "white",
@@ -312,6 +353,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.7,
     shadowRadius: 20,
     marginBottom: 20,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   checkInBtn: {

@@ -3,6 +3,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View } from "react-native";
 import { Provider } from "react-redux";
+import { Provider as PaperProvider } from "react-native-paper";
 import NavBar from "./Components/NavBar";
 import Home from "./Screens/Home";
 import CheckIn from "./Screens/CheckIn";
@@ -29,6 +30,7 @@ const store = createStore(reducer);
 export default function App() {
   return (
     <Provider store={store}>
+<<<<<<< HEAD
       <NavigationContainer>
         <Stack.Navigator>
           <Stack.Screen
@@ -48,6 +50,24 @@ export default function App() {
           />
         </Stack.Navigator>
       </NavigationContainer>
+=======
+      <PaperProvider>
+        <NavigationContainer>
+          <Stack.Navigator>
+            {/* <Stack.Screen
+            name="Authentication"
+            component={Authentication}
+            options={{ headerShown: false }}
+          /> */}
+            <Stack.Screen
+              name="Main"
+              component={NavBar}
+              options={{ headerShown: false }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </PaperProvider>
+>>>>>>> 017bd8c5743e67f2da80bbf9c09ee9187971225b
     </Provider>
   );
 }
