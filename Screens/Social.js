@@ -1,26 +1,27 @@
-import React from "react";
-import {
-  View,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  Image,
-  Dimensions,
-} from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, StyleSheet, Text, TouchableOpacity, Image, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import "react-native-gesture-handler";
 import { createStackNavigator } from "@react-navigation/stack";
 import Header from "../Components/Header";
-<<<<<<< HEAD
 import { Button } from "react-native-paper"
 import { getAuth, signOut } from "firebase/auth";
-
+import { useFonts, Montserrat_700Bold, Montserrat_600SemiBold, Montserrat_500Medium } from "@expo-google-fonts/montserrat";
 
 export default function Social({ navigation }) {
+
   const auth = getAuth();
+  const user = auth.currentUser
+  console.log(user.photoURL)
+
+  let [fontsLoaded] = useFonts({
+    Montserrat_600SemiBold,
+    Montserrat_700Bold,
+    Montserrat_500Medium
+  });
 
   const SignOutButton = () => (
-    <Button uppercase={false} style={{ backgroundColor: '#F37121' }} labelStyle={{ fontFamily: "Montserrat_600SemiBold" }} mode="contained" onPress={() => {
+    <Button uppercase={false} style={{ backgroundColor: '#F37121', marginVertical: 50 }} labelStyle={{ fontFamily: "Montserrat_600SemiBold" }} mode="contained" onPress={() => {
       signOut(auth).then(() => {
         navigation.navigate('Login')
         // Sign-out successful.
@@ -34,89 +35,15 @@ export default function Social({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <Header />
-      <View>
+      <View style={{ display: 'flex', alignItems: 'center' }}>
+        <View style={{ justifyContent: 'center', display: 'flex', alignItems: 'center' }}>
+          <Image style={{ width: 150, height: 150, marginVertical: 30, borderRadius: 100 }} source={{ uri: user.photoURL }} />
+          <Text style={{ fontFamily: 'Montserrat_700Bold', fontSize: 15 }}>{user.displayName}</Text>
+        </View>
         <SignOutButton />
-        <Text>Social</Text>
       </View>
     </SafeAreaView>
   );
-=======
-import {
-  useFonts,
-  Montserrat_100Thin,
-  Montserrat_200ExtraLight,
-  Montserrat_300Light,
-  Montserrat_400Regular,
-  Montserrat_500Medium,
-  Montserrat_600SemiBold,
-  Montserrat_700Bold,
-  Montserrat_800ExtraBold,
-  Montserrat_900Black,
-  Montserrat_100Thin_Italic,
-  Montserrat_200ExtraLight_Italic,
-  Montserrat_300Light_Italic,
-  Montserrat_400Regular_Italic,
-  Montserrat_500Medium_Italic,
-  Montserrat_600SemiBold_Italic,
-  Montserrat_700Bold_Italic,
-  Montserrat_800ExtraBold_Italic,
-  Montserrat_900Black_Italic,
-} from "@expo-google-fonts/montserrat";
-import AppLoading from "expo-app-loading";
-import { ScrollView } from "react-native-gesture-handler";
-
-export default function Social({ navigation }) {
-  let [fontsLoaded] = useFonts({
-    Montserrat_100Thin,
-    Montserrat_200ExtraLight,
-    Montserrat_300Light,
-    Montserrat_400Regular,
-    Montserrat_500Medium,
-    Montserrat_600SemiBold,
-    Montserrat_700Bold,
-    Montserrat_800ExtraBold,
-    Montserrat_900Black,
-    Montserrat_100Thin_Italic,
-    Montserrat_200ExtraLight_Italic,
-    Montserrat_300Light_Italic,
-    Montserrat_400Regular_Italic,
-    Montserrat_500Medium_Italic,
-    Montserrat_600SemiBold_Italic,
-    Montserrat_700Bold_Italic,
-    Montserrat_800ExtraBold_Italic,
-    Montserrat_900Black_Italic,
-  });
-
-  if (!fontsLoaded) {
-    return <AppLoading />;
-  } else {
-    return (
-      <SafeAreaView style={styles.container}>
-        <ScrollView style={styles.scroll} stickyHeaderIndices={[0]}>
-          <Header />
-          <View style={styles.container}>
-            <View style={styles.headerContainer}>
-              <Image
-                style={styles.headerIcon}
-                source={require("../assets/icons8-user-48.png")}
-              />
-              <Text style={styles.headerText}>Profile</Text>
-            </View>
-            <View style={styles.profileContainer}></View>
-            <View style={styles.headerContainer}>
-              <Image
-                style={styles.headerIcon}
-                source={require("../assets/icons8-leaderboard-48.png")}
-              />
-              <Text style={styles.headerText}>Leaderboard</Text>
-            </View>
-            <View style={styles.leaderboardContainer}></View>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    );
-  }
->>>>>>> 017bd8c5743e67f2da80bbf9c09ee9187971225b
 }
 
 const height = Dimensions.get("window").height;

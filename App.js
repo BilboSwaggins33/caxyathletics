@@ -30,44 +30,27 @@ const store = createStore(reducer);
 export default function App() {
   return (
     <Provider store={store}>
-<<<<<<< HEAD
-      <NavigationContainer>
-        <Stack.Navigator>
-          <Stack.Screen
-            name="Loading"
-            component={Loading}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Main"
-            component={NavBar}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Login"
-            component={Login}
-            options={{ headerShown: false }}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-=======
       <PaperProvider>
         <NavigationContainer>
           <Stack.Navigator>
-            {/* <Stack.Screen
-            name="Authentication"
-            component={Authentication}
-            options={{ headerShown: false }}
-          /> */}
+            <Stack.Screen
+              name="Loading"
+              component={Loading}
+              options={{ headerShown: false }}
+            />
             <Stack.Screen
               name="Main"
               component={NavBar}
               options={{ headerShown: false }}
             />
+            <Stack.Screen
+              name="Login"
+              component={Login}
+              options={{ headerShown: false }}
+            />
           </Stack.Navigator>
         </NavigationContainer>
       </PaperProvider>
->>>>>>> 017bd8c5743e67f2da80bbf9c09ee9187971225b
     </Provider>
   );
 }
