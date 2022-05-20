@@ -35,17 +35,13 @@ import {
 import AppLoading from "expo-app-loading";
 import NavBar from "../Components/NavBar";
 import Header from "../Components/Header";
-<<<<<<< HEAD
-import { getAuth, signOut } from "firebase/auth"
-=======
+import { getAuth, signOut } from "firebase/auth";
 import { styleProps } from "react-native-web/dist/cjs/modules/forwardedProps";
 import AnnouncementModal from "../Components/AnnouncementModal";
 import { Provider } from "react-native-paper";
 
->>>>>>> 017bd8c5743e67f2da80bbf9c09ee9187971225b
 export default function Home() {
-
-  const auth = getAuth()
+  const auth = getAuth();
   let [fontsLoaded] = useFonts({
     Montserrat_100Thin,
     Montserrat_200ExtraLight,

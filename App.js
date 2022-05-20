@@ -12,8 +12,8 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { createStore } from "redux";
 import Header from "./Components/Header";
 import Loading from "./Screens/Loading";
-import Login from "./Screens/Login"
-import firebaseConfig from "./config"
+import Login from "./Screens/Login";
+import firebaseConfig from "./config";
 
 const initialState = {
   user: null,
@@ -30,44 +30,32 @@ const store = createStore(reducer);
 export default function App() {
   return (
     <Provider store={store}>
-<<<<<<< HEAD
-      <NavigationContainer>
-        <Stack.Navigator>
-          <Stack.Screen
-            name="Loading"
-            component={Loading}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Main"
-            component={NavBar}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Login"
-            component={Login}
-            options={{ headerShown: false }}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-=======
       <PaperProvider>
         <NavigationContainer>
           <Stack.Navigator>
             {/* <Stack.Screen
-            name="Authentication"
-            component={Authentication}
-            options={{ headerShown: false }}
-          /> */}
+              name="Loading"
+              component={Loading}
+              options={{ headerShown: false }}
+            /> */}
             <Stack.Screen
               name="Main"
               component={NavBar}
               options={{ headerShown: false }}
             />
+            {/* <Stack.Screen
+              name="Authentication"
+              component={Authentication}
+              options={{ headerShown: false }}
+            /> */}
+            {/* <Stack.Screen
+              name="Login"
+              component={Login}
+              options={{ headerShown: false }}
+            /> */}
           </Stack.Navigator>
         </NavigationContainer>
       </PaperProvider>
->>>>>>> 017bd8c5743e67f2da80bbf9c09ee9187971225b
     </Provider>
   );
 }

@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Pressable,
   Image,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Location from "expo-location";
@@ -21,102 +22,13 @@ import {
   Montserrat_500Medium,
   Montserrat_600SemiBold,
   Montserrat_700Bold,
-  Montserrat_800ExtraBold,
-  Montserrat_900Black,
-  Montserrat_100Thin_Italic,
-  Montserrat_200ExtraLight_Italic,
-  Montserrat_300Light_Italic,
-  Montserrat_400Regular_Italic,
-  Montserrat_500Medium_Italic,
-  Montserrat_600SemiBold_Italic,
-  Montserrat_700Bold_Italic,
-  Montserrat_800ExtraBold_Italic,
-  Montserrat_900Black_Italic,
 } from "@expo-google-fonts/montserrat";
 import Header from "../Components/Header";
 import AppLoading from "expo-app-loading";
 import EventView from "../Components/EventView";
 import { Portal, ActivityIndicator, Modal } from "react-native-paper";
-
-const coords = [
-  {
-    name: "Crown",
-    borders: [
-      [42.24988075579007, -87.89339261296719],
-      [42.25005872487502, -87.89301643345081],
-      [42.25058052249325, -87.89350056013409],
-      [42.25038923755838, -87.8938767396464],
-    ],
-  },
-  {
-    name: "Tennis Court",
-    borders: [
-      [42.249783158798124, -87.89300534067111],
-      [42.24944289911095, -87.89268749580225],
-      [42.249774722629695, -87.89196189775494],
-      [42.25009435889159, -87.89221642691284],
-    ],
-  },
-  {
-    name: "Ice Rink",
-    borders: [
-      [42.25114964121149, -87.89382269040402],
-      [42.25137240067373, -87.89335328380511],
-      [42.2508857186568, -87.89292313070366],
-      [42.25065811483334, -87.893397443991],
-    ],
-  },
-  {
-    name: "Track",
-    borders: [
-      [42.251764539726665, -87.89333968673833],
-      [42.252131500902294, -87.89263417835717],
-      [42.25081043067839, -87.89248163600449],
-      [42.251171751779175, -87.89171129712344],
-    ],
-  },
-  {
-    name: "Fields",
-    borders: [
-      [42.25260314209325, -87.8928761337062],
-      [42.251288217572736, -87.89161751093077],
-      [42.25380624739553, -87.88999208951793],
-      [42.25276284765792, -87.88896361490714],
-    ],
-  },
-  {
-    name: "Cressey",
-    borders: [
-      [42.248437984509756, -87.891794910871],
-      [42.24798564172985, -87.89139440799389],
-      [42.24873139430831, -87.89113841646419],
-      [42.24830044819688, -87.89071314021322],
-    ],
-  },
-  {
-    name: "Corbin",
-    borders: [
-      [42.24802778766503, -87.89130225731088],
-      [42.24778647962089, -87.89104284667059],
-      [42.24831667636302, -87.8905745301164],
-      [42.24810595767858, -87.89043219861462],
-    ],
-  },
-  {
-    name: "Atlass",
-    borders: [
-      [42.24950508874197, -87.89256050612069],
-      [42.2497355831767, -87.89199106674774],
-      [42.24876393518291, -87.89186031933885],
-      [42.24896896306967, -87.89138894052255],
-    ],
-  },
-];
-
-// start location + timer component + check to see if there is a game or not
-function checkInGame() {
-  return true;
-}
+import InGame from "./InGame";
+import { coords } from "../Data/coordinates";
 
 export default function CheckIn() {
   const [location, setLocation] = useState(null);
@@ -124,6 +36,7 @@ export default function CheckIn() {
   const [position, setPosition] = useState("");
   const [visible, setVisible] = useState(false);
   const [inLocation, setInLocation] = useState(null);
+  const [inGame, setInGame] = useState(false);
 
   let [fontsLoaded] = useFonts({
     Montserrat_100Thin,
@@ -133,17 +46,6 @@ export default function CheckIn() {
     Montserrat_500Medium,
     Montserrat_600SemiBold,
     Montserrat_700Bold,
-    Montserrat_800ExtraBold,
-    Montserrat_900Black,
-    Montserrat_100Thin_Italic,
-    Montserrat_200ExtraLight_Italic,
-    Montserrat_300Light_Italic,
-    Montserrat_400Regular_Italic,
-    Montserrat_500Medium_Italic,
-    Montserrat_600SemiBold_Italic,
-    Montserrat_700Bold_Italic,
-    Montserrat_800ExtraBold_Italic,
-    Montserrat_900Black_Italic,
   });
 
   const hideModal = () => {
@@ -162,13 +64,10 @@ export default function CheckIn() {
           alert("Permission to access foreground location was denied");
           return;
         }
-        let { status2 } = await Location.requestBackgroundPermissionsAsync();
-        if (status2 !== "granted") {
-          alert("Permission to access background location was denied");
-          return;
-        }
         let loc = await Location.getCurrentPositionAsync({});
         setLocation(loc);
+
+        let backPerm = await Location.requestBackgroundPermissionsAsync();
       } catch (error) {
         let status = Location.getProviderStatusAsync();
         if (!(await status).locationServicesEnabled) {
@@ -191,8 +90,12 @@ export default function CheckIn() {
     // re run the check location
     // first hide location with a text saying "loading..."
     // then renders location
+    if (text === "Waiting...") {
+      Alert.alert("Please wait till location is fetched");
+      return;
+    }
 
-    /* for (let i = 0; i < coords.length; i++) {
+    for (let i = 0; i < coords.length; i++) {
       console.log(location.coords.latitude);
       console.log(location.coords.longitude);
       if (
@@ -209,7 +112,7 @@ export default function CheckIn() {
         console.log("is not inside any registered location");
         setPosition("Not in any registered location");
       }
-    } */
+    }
     setInLocation(false);
     return false;
   }
@@ -250,6 +153,7 @@ export default function CheckIn() {
                   Sorry. You are not at one of the game locations or there is no
                   game scheduled right now.
                 </Text>
+                <Text>{position}</Text>
               </View>
             </Modal>
           </Portal>
@@ -263,28 +167,14 @@ export default function CheckIn() {
             </View>
           </View>
 
-          {inLocation === true ? (
-            <View>
-              <EventView />
-              <TouchableOpacity onPress={checkInGame}>
-                <View style={styles.checkInBtn}>
-                  <Image
-                    style={styles.checkInIcon}
-                    source={require("../assets/icons8-paper-plane-48.png")}
-                  />
-                  <Text style={styles.checkInText}>Check In</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          ) : (
+          {text === "Waiting..." || inLocation !== true ? (
             <View>
               <View style={styles.eventView}>
                 <ActivityIndicator
-                  animating={inLocation === null}
+                  animating={text === "Waiting..."}
                   color={"#F37121"}
                   size={"large"}
                 />
-                {/* <Text>{position}</Text> */}
               </View>
               <TouchableOpacity onPress={checkLocation}>
                 <View style={styles.checkInBtn}>
@@ -296,7 +186,22 @@ export default function CheckIn() {
                 </View>
               </TouchableOpacity>
             </View>
+          ) : (
+            <View>
+              <EventView />
+              <TouchableOpacity>
+                <View style={styles.checkInBtn}>
+                  <Image
+                    style={styles.checkInIcon}
+                    source={require("../assets/icons8-paper-plane-48.png")}
+                  />
+                  <Text style={styles.checkInText}>Check In</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
           )}
+
+          {/* {inGame === true ? <InGame /> : false} */}
         </ScrollView>
       </SafeAreaView>
     );

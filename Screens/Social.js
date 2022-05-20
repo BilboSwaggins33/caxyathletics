@@ -11,36 +11,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import "react-native-gesture-handler";
 import { createStackNavigator } from "@react-navigation/stack";
 import Header from "../Components/Header";
-<<<<<<< HEAD
-import { Button } from "react-native-paper"
+import { Button } from "react-native-paper";
 import { getAuth, signOut } from "firebase/auth";
-
-
-export default function Social({ navigation }) {
-  const auth = getAuth();
-
-  const SignOutButton = () => (
-    <Button uppercase={false} style={{ backgroundColor: '#F37121' }} labelStyle={{ fontFamily: "Montserrat_600SemiBold" }} mode="contained" onPress={() => {
-      signOut(auth).then(() => {
-        navigation.navigate('Login')
-        // Sign-out successful.
-      }).catch((error) => {
-        // An error happened.
-      });
-    }}>
-      Sign Out
-    </Button>
-  );
-  return (
-    <SafeAreaView style={styles.container}>
-      <Header />
-      <View>
-        <SignOutButton />
-        <Text>Social</Text>
-      </View>
-    </SafeAreaView>
-  );
-=======
 import {
   useFonts,
   Montserrat_100Thin,
@@ -87,6 +59,29 @@ export default function Social({ navigation }) {
     Montserrat_900Black_Italic,
   });
 
+  const auth = getAuth();
+
+  const SignOutButton = () => (
+    <Button
+      uppercase={false}
+      style={{ backgroundColor: "#F37121" }}
+      labelStyle={{ fontFamily: "Montserrat_600SemiBold" }}
+      mode="contained"
+      onPress={() => {
+        signOut(auth)
+          .then(() => {
+            navigation.navigate("Login");
+            // Sign-out successful.
+          })
+          .catch((error) => {
+            // An error happened.
+          });
+      }}
+    >
+      Sign Out
+    </Button>
+  );
+
   if (!fontsLoaded) {
     return <AppLoading />;
   } else {
@@ -112,11 +107,11 @@ export default function Social({ navigation }) {
             </View>
             <View style={styles.leaderboardContainer}></View>
           </View>
+          <SignOutButton />
         </ScrollView>
       </SafeAreaView>
     );
   }
->>>>>>> 017bd8c5743e67f2da80bbf9c09ee9187971225b
 }
 
 const height = Dimensions.get("window").height;

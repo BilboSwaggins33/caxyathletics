@@ -3,36 +3,37 @@ import { StyleSheet, View, Text } from "react-native";
 import { initializeApp } from "@firebase/app";
 import { getAuth, onAuthStateChanged } from "@firebase/auth";
 import { firebaseConfig } from "../config";
+import { ActivityIndicator } from "react-native-paper";
 
 export default function Loading({ navigation }) {
-    const firebaseApp = initializeApp(firebaseConfig)
-    const auth = getAuth(firebaseApp);
+  const firebaseApp = initializeApp(firebaseConfig);
+  const auth = getAuth(firebaseApp);
 
-    useEffect(() => {
-        checkIfLoggedIn()
-    }, [])
+  useEffect(() => {
+    checkIfLoggedIn();
+  }, []);
 
-    function checkIfLoggedIn() {
-        onAuthStateChanged(auth, user => {
-            if (user) {
-                navigation.navigate('Main');
-            } else {
-                navigation.navigate('Login');
-            }
-        });
-    }
+  function checkIfLoggedIn() {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        navigation.navigate("Main");
+      } else {
+        navigation.navigate("Authentication");
+      }
+    });
+  }
 
-    return (
-        <View style={styles.container}>
-            <Text>Loading Screen</Text>
-        </View>
-    );
+  return (
+    <View style={styles.container}>
+      <ActivityIndicator />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center"
-    }
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });

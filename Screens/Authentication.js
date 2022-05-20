@@ -1,31 +1,46 @@
-import React, { useState, useEffect } from "react";
-import { StyleSheet, View, Text } from "react-native";
-import { initializeApp } from "@firebase/app";
-import { getAuth, onAuthStateChanged } from "@firebase/auth";
+// import React, { useState, useEffect } from "react";
+// import { StyleSheet, View, Text } from "react-native";
+// import { auth } from "../config";
+// import { signInWithPopup, GoogleAuthProvider } from "@firebase/auth";
+// import { Button } from "react-native-paper";
+// import { SafeAreaView } from "react-native-safe-area-context";
+// import {
+//   GoogleSignin,
+//   GoogleSigninButton,
+//   statusCodes,
+// } from "@react-native-google-signin/google-signin";
 
-<<<<<<< HEAD
-=======
-// DO GOOGLE SIGN IN HERE
+// export default function Authentication({ navigation }) {
+//   return (
+//     <SafeAreaView>
+//       <View>
+//         <View style={{ alignItems: "center", justifyContent: "center" }}>
+//           <Text style={{ color: "black" }}>Hello Screen</Text>
+//           <Text>Hello Everyone</Text>
+//         </View>
+//         <Button
+//           icon="google"
+//           style={{ backgroundColor: "#F37121" }}
+//           labelStyle={{ fontFamily: "Montserrat_600SemiBold" }}
+//           mode="contained"
+//           onPress={signInWithGoogle}
+//         >
+//           Sign In With Google
+//         </Button>
+//       </View>
+//     </SafeAreaView>
+//   );
+// }
 
-const firebaseApp = initializeApp(firebaseConfig);
-const auth = getAuth(firebaseApp);
->>>>>>> 017bd8c5743e67f2da80bbf9c09ee9187971225b
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     alignItems: "center",
+//     justifyContent: "center",
+//   },
 
-export default function Authentication({ navigation }) {
-
-  return (
-    <View style={{ flex: 1 }}>
-      <View style={{ alignItems: "center", justifyContent: 'center' }}>
-        <Text>Hello Screen</Text>
-      </View>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center"
-  }
-});
+//   btn: {
+//     widht: 200,
+//     height: 50,
+//   },
+// });
