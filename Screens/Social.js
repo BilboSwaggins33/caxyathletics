@@ -35,11 +35,16 @@ export default function Social({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <Header />
+      <View style={styles.headerContainer}>
+        <Image style={styles.headerIcon} source={require("../assets/icons8-user-48.png")} />
+        <Text style={styles.headerText}>Profile</Text>
+        <Image style={styles.settingsIcon} source={require("../assets/icons8-settings-48.png")} />
+      </View>
+      <View style={styles.profileContainer}>
+        <Image style={{ width: 100, height: 100, marginVertical: 20, borderRadius: 100 }} source={{ uri: user.photoURL }} />
+        <Text style={{ fontFamily: 'Montserrat_700Bold', fontSize: 20 }}>{user.displayName}</Text>
+      </View>
       <View style={{ display: 'flex', alignItems: 'center' }}>
-        <View style={{ justifyContent: 'center', display: 'flex', alignItems: 'center' }}>
-          <Image style={{ width: 150, height: 150, marginVertical: 30, borderRadius: 100 }} source={{ uri: user.photoURL }} />
-          <Text style={{ fontFamily: 'Montserrat_700Bold', fontSize: 15 }}>{user.displayName}</Text>
-        </View>
         <SignOutButton />
       </View>
     </SafeAreaView>
@@ -63,19 +68,26 @@ const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginLeft: 25,
+    marginHorizontal: 25,
     marginVertical: 10,
   },
 
   headerText: {
+    fontSize: 16,
     fontFamily: "Montserrat_700Bold",
     color: "#3E3939",
     marginLeft: 10,
   },
 
   headerIcon: {
-    width: 30,
-    height: 30,
+    maxWidth: 24,
+    maxHeight: 24,
+  },
+
+  settingsIcon: {
+    maxWidth: 30,
+    maxHeight: 30,
+    marginLeft: 'auto'
   },
 
   profileContainer: {
@@ -88,6 +100,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.7,
     shadowRadius: 20,
     marginLeft: 25,
+    display: 'flex',
+    alignItems: 'center',
   },
 
   leaderboardContainer: {

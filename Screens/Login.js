@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getDatabase, ref, set, onValue } from "firebase/database";
+import { getDatabase, ref, set, onValue, update } from "firebase/database";
 import { StyleSheet, View, Text } from "react-native";
 import { initializeApp } from "@firebase/app";
 import * as Google from 'expo-auth-session/providers/google';
@@ -10,7 +10,7 @@ import AppLoading from "expo-app-loading";
 import { Button } from "react-native-paper";
 import { useFonts, Montserrat_700Bold, Montserrat_600SemiBold } from "@expo-google-fonts/montserrat";
 
-initializeApp(firebaseConfig)
+//initializeApp(firebaseConfig)
 WebBrowser.maybeCompleteAuthSession();
 //https://auth.expo.io/@anonymous/caxy-athletics-2-77c481ca-9e93-4d00-84e6-ec3ca215bc57
 export default function Login({ navigation }) {
@@ -35,13 +35,25 @@ export default function Login({ navigation }) {
                 console.log(result)
                 //console.log(result.user.uid, result.user.displayName, result.user.email, result.user.photoURL)
 
-                set(ref(db, "users/" + result.user.uid), {
-                    uid: result.user.uid,
-                    name: result.user.displayName,
-                    email: result.user.email,
-                    profileUrl: result.user.photoURL,
-                    points: 0
+                onValue(ref(db, "users/" + result.user.uid), (snapshot) => {
+                    if (snapshot.exists()) {
+                        update(ref(db, "users/" + result.user.uid), {
+                            uid: result.user.uid,
+                            name: result.user.displayName,
+                            email: result.user.email,
+                            profileUrl: result.user.photoURL
+                        })
+                    } else {
+                        set(ref(db, "users/" + result.user.uid), {
+                            uid: result.user.uid,
+                            name: result.user.displayName,
+                            email: result.user.email,
+                            profileUrl: result.user.photoURL,
+                            points: 0
+                        })
+                    }
                 })
+
 
                 //writeUserData(result.user.uid, result.user.displayName, result.email, result.photoURL)
                 navigation.navigate("Main")

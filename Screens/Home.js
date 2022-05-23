@@ -1,16 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import {
-  StyleSheet,
-  View,
-  Text,
-  SafeAreaView,
-  ScrollView,
-  Dimensions,
-  TouchableOpacity,
-  Image,
-  Linking,
-  Alert,
-} from "react-native";
+import { StyleSheet, View, Text, SafeAreaView, ScrollView, Dimensions, TouchableOpacity, Image, Linking, Alert, FlatList } from "react-native";
 import {
   useFonts,
   Montserrat_100Thin,
@@ -39,8 +28,10 @@ import { getAuth, signOut } from "firebase/auth"
 import { styleProps } from "react-native-web/dist/cjs/modules/forwardedProps";
 import AnnouncementModal from "../Components/AnnouncementModal";
 import { Provider } from "react-native-paper";
+import { getDatabase, ref, set, onValue, update } from "firebase/database";
 
-export default function Home() {
+
+export default function Home({ navigation }) {
 
   const auth = getAuth()
   let [fontsLoaded] = useFonts({
@@ -65,12 +56,24 @@ export default function Home() {
   });
 
   const [eventClicked, setEventClicked] = useState(false);
-
+  const [photos, setPhotos] = useState([])
+  const db = getDatabase()
+  const galleryRef = ref(db, 'gallery/')
+  useEffect(() => {
+    onValue(galleryRef, (snapshot) => {
+      setPhotos(Object.values(snapshot.val()).slice(-4))
+    })
+  }, [])
   useEffect(() => {
     if (eventClicked) {
       window.location.assign("https://www.lfacaxys.org/");
     }
   });
+
+  const handlePress = () => {
+    console.log('presssed')
+    navigation.navigate("Gallery")
+  }
 
   const lfaURL = "https://www.lfacaxys.org/";
 
@@ -110,12 +113,22 @@ export default function Home() {
               <Text style={styles.headerText}>Photo Gallery</Text>
             </View>
           </View>
-          <View style={styles.photoGallery}></View>
+          <TouchableOpacity onPress={handlePress}>
+            <View style={styles.photoGallery}>
+              <FlatList data={photos}
+                numColumns={2}
+                renderItem={({ item, index }) => (
+                  <Image source={{ uri: item.uri }} style={{ aspectRatio: 1 / 1, width: "50%", height: undefined }} />
+                )}
+              />
+            </View>
+          </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
     );
   }
 }
+
 
 function MoreEventsBtn({ url }) {
   const handlePress = useCallback(async () => {
@@ -230,10 +243,9 @@ const styles = StyleSheet.create({
 
   photoGallery: {
     width: width - 50,
-    height: 400,
-    backgroundColor: "white",
-    borderRadius: 20,
-    marginLeft: 25,
     marginBottom: 25,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignSelf: 'center',
   },
 });

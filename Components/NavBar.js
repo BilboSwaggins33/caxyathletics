@@ -7,14 +7,28 @@ import { Ionicons } from "@expo/vector-icons";
 
 import CheckIn from "../Screens/CheckIn";
 import Home from "../Screens/Home";
+import Gallery from "../Screens/Gallery"
 import Social from "../Screens/Social";
+import TakePicture from "../Screens/TakePicture"
 import Rewards from "../Screens/Rewards";
 import { createStackNavigator } from "@react-navigation/stack";
 import Header from "./Header";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
-
+const HomeStack = createStackNavigator()
+const HomeStackNav = () => {
+  return (
+    <HomeStack.Navigator initialRouteName="Home"
+      screenOptions={{
+        headerShown: false
+      }}>
+      <HomeStack.Screen name="Home" component={Home} />
+      <HomeStack.Screen name="Gallery" component={Gallery} />
+      <HomeStack.Screen name="TakePicture" component={TakePicture} />
+    </HomeStack.Navigator>
+  )
+}
 export default function NavBar({ navigation }) {
   return (
     <Tab.Navigator
@@ -23,7 +37,7 @@ export default function NavBar({ navigation }) {
           let iconName;
           let type;
 
-          if (route.name === "Home") {
+          if (route.name === "HomeStack") {
             iconName = focused ? "ios-home" : "ios-home-outline";
           } else if (route.name === "Check In") {
             iconName = focused ? "ios-location" : "ios-location-outline";
@@ -47,7 +61,7 @@ export default function NavBar({ navigation }) {
         },
       })}
     >
-      <Tab.Screen name="Home" component={Home} />
+      <Tab.Screen name="HomeStack" component={HomeStackNav} />
       <Tab.Screen name="Check In" component={CheckIn} />
       <Tab.Screen name="Rewards" component={Rewards} />
       <Tab.Screen name="Social" component={Social} />
