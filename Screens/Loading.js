@@ -18,7 +18,7 @@ export default function Loading({ navigation }) {
       if (user) {
         navigation.navigate("Main");
       } else {
-        navigation.navigate("Authentication");
+        navigation.navigate("Login");
       }
     });
   }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -15,56 +15,26 @@ import { Button } from "react-native-paper";
 import { getAuth, signOut } from "firebase/auth";
 import {
   useFonts,
-  Montserrat_100Thin,
-  Montserrat_200ExtraLight,
-  Montserrat_300Light,
-  Montserrat_400Regular,
-  Montserrat_500Medium,
-  Montserrat_600SemiBold,
   Montserrat_700Bold,
-  Montserrat_800ExtraBold,
-  Montserrat_900Black,
-  Montserrat_100Thin_Italic,
-  Montserrat_200ExtraLight_Italic,
-  Montserrat_300Light_Italic,
-  Montserrat_400Regular_Italic,
-  Montserrat_500Medium_Italic,
-  Montserrat_600SemiBold_Italic,
-  Montserrat_700Bold_Italic,
-  Montserrat_800ExtraBold_Italic,
-  Montserrat_900Black_Italic,
+  Montserrat_600SemiBold,
+  Montserrat_500Medium,
 } from "@expo-google-fonts/montserrat";
-import AppLoading from "expo-app-loading";
-import { ScrollView } from "react-native-gesture-handler";
 
 export default function Social({ navigation }) {
+  const auth = getAuth();
+  const user = auth.currentUser;
+  console.log(user.photoURL);
+
   let [fontsLoaded] = useFonts({
-    Montserrat_100Thin,
-    Montserrat_200ExtraLight,
-    Montserrat_300Light,
-    Montserrat_400Regular,
-    Montserrat_500Medium,
     Montserrat_600SemiBold,
     Montserrat_700Bold,
-    Montserrat_800ExtraBold,
-    Montserrat_900Black,
-    Montserrat_100Thin_Italic,
-    Montserrat_200ExtraLight_Italic,
-    Montserrat_300Light_Italic,
-    Montserrat_400Regular_Italic,
-    Montserrat_500Medium_Italic,
-    Montserrat_600SemiBold_Italic,
-    Montserrat_700Bold_Italic,
-    Montserrat_800ExtraBold_Italic,
-    Montserrat_900Black_Italic,
+    Montserrat_500Medium,
   });
-
-  const auth = getAuth();
 
   const SignOutButton = () => (
     <Button
       uppercase={false}
-      style={{ backgroundColor: "#F37121" }}
+      style={{ backgroundColor: "#F37121", marginVertical: 50 }}
       labelStyle={{ fontFamily: "Montserrat_600SemiBold" }}
       mode="contained"
       onPress={() => {
@@ -81,37 +51,34 @@ export default function Social({ navigation }) {
       Sign Out
     </Button>
   );
-
-  if (!fontsLoaded) {
-    return <AppLoading />;
-  } else {
-    return (
-      <SafeAreaView style={styles.container}>
-        <ScrollView style={styles.scroll} stickyHeaderIndices={[0]}>
-          <Header />
-          <View style={styles.container}>
-            <View style={styles.headerContainer}>
-              <Image
-                style={styles.headerIcon}
-                source={require("../assets/icons8-user-48.png")}
-              />
-              <Text style={styles.headerText}>Profile</Text>
-            </View>
-            <View style={styles.profileContainer}></View>
-            <View style={styles.headerContainer}>
-              <Image
-                style={styles.headerIcon}
-                source={require("../assets/icons8-leaderboard-48.png")}
-              />
-              <Text style={styles.headerText}>Leaderboard</Text>
-            </View>
-            <View style={styles.leaderboardContainer}></View>
-          </View>
-          <SignOutButton />
-        </ScrollView>
-      </SafeAreaView>
-    );
-  }
+  return (
+    <SafeAreaView style={styles.container}>
+      <Header />
+      <View style={{ display: "flex", alignItems: "center" }}>
+        <View
+          style={{
+            justifyContent: "center",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <Image
+            style={{
+              width: 150,
+              height: 150,
+              marginVertical: 30,
+              borderRadius: 100,
+            }}
+            source={{ uri: user.photoURL }}
+          />
+          <Text style={{ fontFamily: "Montserrat_700Bold", fontSize: 15 }}>
+            {user.displayName}
+          </Text>
+        </View>
+        <SignOutButton />
+      </View>
+    </SafeAreaView>
+  );
 }
 
 const height = Dimensions.get("window").height;
