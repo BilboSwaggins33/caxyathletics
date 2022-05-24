@@ -1,5 +1,6 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
+import { useState, useEffect } from "react"
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View } from "react-native";
 import { Provider } from "react-redux";
@@ -15,6 +16,7 @@ import Loading from "./Screens/Loading";
 import Login from "./Screens/Login";
 import firebaseConfig from "./config";
 
+
 const initialState = {
   user: null,
 };
@@ -28,6 +30,7 @@ const store = createStore(reducer);
 // Need to add loading and sign in screen
 
 export default function App() {
+
   return (
     <Provider store={store}>
       <PaperProvider>
