@@ -1,14 +1,19 @@
 import React, { useState, useEffect, useRef } from "react";
 import { getDatabase, set, onValue, update, ref, push } from "firebase/database";
+import { getAuth } from "firebase/auth";
 import { StyleSheet, View, Text, SafeAreaView, TouchableOpacity } from "react-native";
 import { Camera, CameraType } from 'expo-camera';
 import Ionicons from "@expo/vector-icons/Ionicons"
+import moment from "moment"
 
 export default function TakePicture({ navigation }) {
     const [hasPermission, setHasPermission] = useState(null);
     const [type, setType] = useState(CameraType.back);
     const cameraRef = useRef(null)
     const db = getDatabase()
+    const auth = getAuth();
+    const user = auth.currentUser;
+
     useEffect(() => {
         (async () => {
             const { status } = await Camera.requestCameraPermissionsAsync();
@@ -26,12 +31,16 @@ export default function TakePicture({ navigation }) {
         console.log("picture clicked")
         if (cameraRef) {
             try {
-                let photo = await cameraRef.current.takePictureAsync({
+                let p = await cameraRef.current.takePictureAsync({
                     quality: 1,
                     base64: true
+                }).then(photo => {
+                    return photo.base64
                 })
                 push(ref(db, 'gallery/'), {
-                    uri: photo.uri
+                    uri: 'data:image/jpg;base64,' + p,
+                    postedBy: user.uid,
+                    time: moment().format('MMMM Do YYYY, h:mm a')
                 })
             } catch (e) {
                 //console.log(e)

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getDatabase, ref, set, onValue, update } from "firebase/database";
-import { StyleSheet, View, Text, FlatList, SafeAreaView, Image } from "react-native";
+import { StyleSheet, View, Text, FlatList, SafeAreaView, Image, TouchableOpacity, Modal, Dimensions } from "react-native";
 import { initializeApp } from "@firebase/app";
 import * as WebBrowser from 'expo-web-browser';
 import { firebaseConfig } from "../config";
@@ -12,6 +12,8 @@ import { Button } from "react-native-paper"
 
 export default function Gallery({ navigation }) {
     const [photos, setPhotos] = useState([])
+    const [modalVisible, setModalVisible] = useState(false);
+    const [img, setIMG] = useState({})
     const db = getDatabase()
     const galleryRef = ref(db, 'gallery/')
     useEffect(() => {
@@ -25,6 +27,22 @@ export default function Gallery({ navigation }) {
         Montserrat_700Bold,
         Montserrat_500Medium
     });
+    const height = Dimensions.get("window").height;
+    const width = Dimensions.get("window").width;
+    const handlePicture = (item) => {
+        const userRef = ref(db, 'users/' + item.postedBy)
+        onValue(userRef, (snapshot) => {
+            const data = snapshot.val()
+            //console.log(data)
+            setIMG({
+                user: data.name,
+                uri: item.uri,
+                profUrl: data.profileUrl,
+                time: item.time
+            })
+            setModalVisible(true)
+        })
+    }
 
     if (!fontsLoaded) {
         return <AppLoading />
@@ -33,6 +51,34 @@ export default function Gallery({ navigation }) {
             <SafeAreaView style={styles.container}>
                 <View>
                     <Header />
+                    <Modal
+                        animationType="slide"
+                        transparent={false}
+                        visible={modalVisible}
+                        onRequestClose={() => {
+                            setModalVisible(!modalVisible);
+                        }}
+                    >
+                        <View style={styles.centeredView}>
+                            <View style={styles.modalView}>
+                                <View>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <Image source={{ uri: img.profUrl }} style={{ width: 25, height: 25, borderRadius: 25, marginRight: 10 }} />
+                                        <Text style={styles.modalText}>{img.user}</Text>
+                                    </View>
+                                    <Text style={[styles.modalText, styles.time]}>{img.time}</Text>
+                                </View>
+                                <Image source={{ uri: img.uri }} style={{ width: width - 80, height: height - 250, borderRadius: 10 }} />
+                                <Button
+                                    style={[styles.button, styles.buttonClose]}
+                                    onPress={() => setModalVisible(!modalVisible)}
+                                    uppercase={false}
+                                >
+                                    <Text style={styles.textStyle}>Close</Text>
+                                </Button>
+                            </View>
+                        </View>
+                    </Modal>
                     <View style={styles.sectionContainer}>
                         <View style={styles.headerContainer}>
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -50,7 +96,9 @@ export default function Gallery({ navigation }) {
                     <FlatList data={photos}
                         numColumns={3}
                         renderItem={({ item, index }) => (
-                            <Image source={{ uri: item.uri }} style={{ aspectRatio: 1 / 1, width: "33.33%", height: undefined }} />
+                            <TouchableOpacity onPress={() => { handlePicture(item) }} style={{ aspectRatio: 1 / 1, width: "33.33%", height: undefined }}>
+                                <Image source={{ uri: item.uri }} style={{ width: "100%", height: "100%" }} />
+                            </TouchableOpacity>
                         )}
                         contentContainerStyle={{ paddingBottom: 250 }}
                     />
@@ -83,4 +131,48 @@ const styles = StyleSheet.create({
         maxWidth: 24,
         maxHeight: 24,
     },
+    centeredView: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: 22
+    },
+    modalView: {
+        margin: 20,
+        backgroundColor: "white",
+        borderRadius: 20,
+        padding: 20,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5
+    },
+    button: {
+        borderRadius: 10,
+        elevation: 2,
+        marginTop: 20
+    },
+    buttonOpen: {
+        backgroundColor: "#F194FF",
+    },
+    buttonClose: {
+        backgroundColor: "#3E3939",
+    },
+    modalText: {
+        textAlign: "center",
+        fontFamily: "Montserrat_500Medium"
+    },
+    textStyle: {
+        color: "white",
+        fontWeight: "bold",
+        textAlign: "center",
+    },
+    time: {
+        marginVertical: 10
+    }
 });
