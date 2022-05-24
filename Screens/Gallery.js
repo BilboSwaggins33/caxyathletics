@@ -68,7 +68,7 @@ export default function Gallery({ navigation }) {
                                     </View>
                                     <Text style={[styles.modalText, styles.time]}>{img.time}</Text>
                                 </View>
-                                <Image source={{ uri: img.uri }} style={{ width: width - 80, height: height - 250, borderRadius: 10 }} />
+                                <Image source={{ uri: img.uri }} style={{ width: width, height: height - 200, borderRadius: 10 }} />
                                 <Button
                                     style={[styles.button, styles.buttonClose]}
                                     onPress={() => setModalVisible(!modalVisible)}
@@ -138,10 +138,10 @@ const styles = StyleSheet.create({
         marginTop: 22
     },
     modalView: {
-        margin: 20,
+        margin: 10,
         backgroundColor: "white",
         borderRadius: 20,
-        padding: 20,
+        paddingVertical: 10,
         alignItems: "center",
         shadowColor: "#000",
         shadowOffset: {
@@ -173,6 +173,6 @@ const styles = StyleSheet.create({
         textAlign: "center",
     },
     time: {
-        marginVertical: 10
+        marginVertical: 5
     }
 });

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { StyleSheet, View, Text, SafeAreaView, ScrollView, Dimensions, TouchableOpacity, Image, Linking, Alert, FlatList } from "react-native";
+import { StyleSheet, View, Text, SafeAreaView, ScrollView, Dimensions, TouchableOpacity, Image, Linking, Alert, FlatList, ActivityIndicator } from "react-native";
 import {
   useFonts,
   Montserrat_100Thin,

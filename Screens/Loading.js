@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, Text } from "react-native";
+import { StyleSheet, View, Text, ActivityIndicator } from "react-native";
 import { initializeApp } from "@firebase/app";
 import { getAuth, onAuthStateChanged } from "@firebase/auth";
 import { firebaseConfig } from "../config";
@@ -24,7 +24,7 @@ export default function Loading({ navigation }) {
 
     return (
         <View style={styles.container}>
-            <Text>Loading Screen</Text>
+            <ActivityIndicator size="large" />
         </View>
     );
 }
@@ -32,7 +32,6 @@ export default function Loading({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: "center",
         justifyContent: "center"
     }
 });
