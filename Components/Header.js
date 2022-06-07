@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -32,8 +32,10 @@ import {
 import AppLoading from "expo-app-loading";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useCollapsibleHeader } from "react-navigation-collapsible";
+import { useSelector } from "react-redux";
+import { getDatabase, ref, set, onValue, update } from "firebase/database";
 
-export default function Header({ navigation }) {
+export default function Header() {
   let [fontsLoaded] = useFonts({
     Montserrat_100Thin,
     Montserrat_200ExtraLight,
@@ -54,6 +56,7 @@ export default function Header({ navigation }) {
     Montserrat_800ExtraBold_Italic,
     Montserrat_900Black_Italic,
   });
+  const { points } = useSelector((state) => state.userReducer);
 
   const { onScroll, containerPaddingTop, scrollIndicatorInsetTop, translateY } =
     useCollapsibleHeader({
@@ -65,6 +68,9 @@ export default function Header({ navigation }) {
     });
 
   const stickyHeaderHeight = 64;
+
+  // const db = getDatabase();
+  // const ref = db.ref("users");
 
   if (!fontsLoaded) {
     return <AppLoading />;
@@ -80,7 +86,7 @@ export default function Header({ navigation }) {
         </View>
         <TouchableOpacity>
           <View style={styles.pointsBtn}>
-            <Text style={styles.pointsTxt}>330 Points</Text>
+            <Text style={styles.pointsTxt}>{points} Points</Text>
           </View>
         </TouchableOpacity>
       </View>

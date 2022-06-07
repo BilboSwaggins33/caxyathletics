@@ -6,15 +6,18 @@ import {
   Image,
   Dimensions,
   TouchableOpacity,
+  FlatList,
+  Alert,
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
+import { getDatabase, ref, set, onValue, update } from "firebase/database";
+import { getAuth } from "@firebase/auth";
+import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../Components/Header";
+import { Portal, Modal } from "react-native-paper";
 import {
   useFonts,
-  Montserrat_100Thin,
-  Montserrat_200ExtraLight,
-  Montserrat_300Light,
   Montserrat_400Regular,
   Montserrat_500Medium,
   Montserrat_600SemiBold,
@@ -23,47 +26,48 @@ import {
   Montserrat_900Black,
 } from "@expo-google-fonts/montserrat";
 import AppLoading from "expo-app-loading";
-import { rewards } from "../Data/rewards";
 import CircularProgress from "react-native-circular-progress-indicator";
 import { IconButton } from "react-native-paper";
 import { createStackNavigator } from "@react-navigation/stack";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  resetPoints,
+  RESET_POINTS,
+  setMaxPoints,
+  SET_MAX_POINTS,
+  SET_USER_POINTS,
+} from "../redux/actions";
+import { setPoints } from "../redux/actions";
+import { rewardsList } from "../Data/rewards";
 
 const Stack = createStackNavigator();
 
-export default function StackScreen() {
+export default function RewardsStackScreen() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Group>
         <Stack.Screen name="Rewards" component={Rewards} />
       </Stack.Group>
       <Stack.Group screenOptions={{ presentation: "modal" }}>
-        <qStack.Screen name="Redeem" component={RedeemModal} />
+        <Stack.Screen name="Redeem" component={RedeemModal} />
       </Stack.Group>
     </Stack.Navigator>
   );
 }
 
-function RedeemModal({ navigation }) {
-  return (
-    <View>
-      <Text>Modal</Text>
-      <IconButton icon="arrow-left" onPress={() => navigation.goBack()} />
-    </View>
-  );
-}
-
 function Rewards({ navigation }) {
-  const [data, setData] = useState(rewards);
-  const [points, setPoints] = useState(330);
-
-  useEffect(() => {
-    setPoints(0);
-  }, []);
-
+  const [pointsLeft, setPointsLeft] = useState();
+  const { points } = useSelector((state) => state.userReducer);
+  const dispatch = useDispatch();
+  const db = getDatabase();
+  const maxPoints = 1000;
+  let uid;
+  const auth = getAuth();
+  const user = auth.currentUser;
+  if (user !== null) {
+    uid = user.uid;
+  }
   let [fontsLoaded] = useFonts({
-    Montserrat_100Thin,
-    Montserrat_200ExtraLight,
-    Montserrat_300Light,
     Montserrat_400Regular,
     Montserrat_500Medium,
     Montserrat_600SemiBold,
@@ -71,6 +75,32 @@ function Rewards({ navigation }) {
     Montserrat_800ExtraBold,
     Montserrat_900Black,
   });
+
+  useEffect(() => {
+    dispatch(resetPoints);
+  }, []);
+
+  useEffect(() => {
+    checkPointsLeft();
+  }, [points]);
+
+  function updatePoints(total) {
+    onValue(ref(db, "users/" + uid), (snapshot) => {
+      if (snapshot.exists()) {
+        update(ref(db, "users/" + uid), {
+          points: total,
+        });
+      }
+    });
+  }
+
+  function checkPointsLeft() {
+    if (points !== 0 && points % 100 === 0) {
+      setPointsLeft(0);
+    } else {
+      setPointsLeft(100 - (points % 100));
+    }
+  }
 
   if (!fontsLoaded) {
     return <AppLoading />;
@@ -108,7 +138,18 @@ function Rewards({ navigation }) {
               icon="plus"
               color="black"
               size={36}
-              onPress={() => setPoints(points + 50)}
+              onPress={() => {
+                let total = points + 50;
+                if (total < maxPoints) {
+                  console.log(total);
+                  dispatch(setPoints(points, 50));
+                  // eventualy change updatePoints to timer
+                  updatePoints(total);
+                } else {
+                  dispatch(setMaxPoints(maxPoints));
+                  updatePoints(maxPoints);
+                }
+              }}
               style={{ position: "relative" }}
             />
             <View style={styles.textContainer}>
@@ -116,7 +157,9 @@ function Rewards({ navigation }) {
                 style={styles.subtitleIcon}
                 source={require("../assets/icons8-prize-48.png")}
               />
-              <Text style={styles.subtitleText}>70 points to next reward</Text>
+              <Text style={styles.subtitleText}>
+                {pointsLeft} points to next reward
+              </Text>
             </View>
             <View style={styles.redeemContainer}>
               <TouchableOpacity onPress={() => navigation.navigate("Redeem")}>
@@ -132,6 +175,86 @@ function Rewards({ navigation }) {
   }
 }
 
+function RedeemModal({ navigation }) {
+  const { points } = useSelector((state) => state.userReducer);
+  const [rewardClicked, setRewardClicked] = useState(0);
+  const [visible, setVisible] = useState(false);
+
+  function Separator() {
+    return (
+      <View
+        style={{
+          marginVertical: 10,
+        }}
+      />
+    );
+  }
+
+  return (
+    <View>
+      <View style={styles.modalHeaderContainer}>
+        <IconButton icon="arrow-left" onPress={() => navigation.goBack()} />
+        <Text style={styles.modalHeaderText}>Rewards</Text>
+        <Text></Text>
+      </View>
+      {/* <View style={styles.pointsContainer}>
+        <Text style={styles.pointsText}>{points} Points</Text>
+      </View> */}
+      <Portal>
+        <Modal>
+          <View>
+            <Text>Hello</Text>
+          </View>
+        </Modal>
+      </Portal>
+      <View style={styles.modalRewardsContainer}>
+        <FlatList
+          data={rewardsList}
+          keyExtractor={(item) => item.id.toString()}
+          ItemSeparatorComponent={() => Separator()}
+          renderItem={({ item }) => {
+            if (item.redeemed === false) {
+              return (
+                <View style={styles.itemContainer}>
+                  <View style={styles.itemNumContainer}>
+                    <Text style={styles.itemNumText}>Reward #{item.id}</Text>
+                  </View>
+                  <View style={styles.itemMetaContainer}>
+                    <Text style={styles.itemNameText}>{item.name}</Text>
+                    <Text style={styles.itemPointsText}>
+                      {item.points} Points
+                    </Text>
+                    <Text style={styles.itemDescriptionText} numberOfLines={2}>
+                      {item.description}
+                    </Text>
+                  </View>
+                  <View style={styles.buttonContainer}>
+                    <TouchableOpacity
+                      onPress={() => Alert.alert("redeem clicked")}
+                    >
+                      <View style={styles.redeemButton}>
+                        <Text style={styles.redeemBtnText}>Redeem</Text>
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              );
+            } else {
+              return (
+                <View style={styles.redeemedContainer}>
+                  <View style={styles.redeemedView}>
+                    <Text style={styles.redeemedText}>REDEEMED</Text>
+                  </View>
+                </View>
+              );
+            }
+          }}
+        />
+      </View>
+    </View>
+  );
+}
+
 const width = Dimensions.get("window").width;
 const height = Dimensions.get("window").height;
 
@@ -139,6 +262,107 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F6F4F4",
+  },
+
+  redeemedView: {
+    borderRadius: 5,
+    borderWidth: 3,
+    height: 110,
+    backgroundColor: "#F37121",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  redeemedText: {
+    fontFamily: "Montserrat_700Bold",
+    color: "white",
+    fontSize: 24,
+  },
+
+  pointsContainer: {
+    alignItems: "center",
+    backgroundColor: "#F37121",
+    height: 40,
+    width: 200,
+    justifyContent: "center",
+  },
+
+  pointsText: {
+    fontFamily: "Montserrat_700Bold",
+  },
+
+  modalHeaderContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+
+  modalHeaderText: {
+    fontFamily: "Montserrat_700Bold",
+    fontSize: 16,
+    left: -24,
+  },
+
+  modalRewardsContainer: {
+    margin: 10,
+    borderColor: "black",
+    // borderWidth: 3,
+  },
+
+  itemNumContainer: {
+    backgroundColor: "#F37121",
+    paddingVertical: 50,
+  },
+
+  itemContainer: {
+    flexDirection: "row",
+    borderWidth: 3,
+    borderRadius: 5,
+  },
+
+  itemNumText: {
+    fontFamily: "Montserrat_700Bold",
+    transform: [{ rotate: "270deg" }],
+  },
+
+  itemPointsText: {
+    fontFamily: "Montserrat_700Bold",
+  },
+
+  itemNameText: {
+    fontFamily: "Montserrat_700Bold",
+  },
+
+  itemDescriptionText: {
+    fontFamily: "Montserrat_400Regular",
+  },
+
+  redeemButton: {
+    backgroundColor: "#F37121",
+    borderRadius: 5,
+    width: 80,
+    height: 40,
+    padding: 5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  buttonContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 20,
+  },
+
+  redeemBtnText: {
+    fontFamily: "Montserrat_400Regular",
+    color: "white",
+  },
+
+  itemMetaContainer: {
+    margin: 20,
+    maxWidth: 120,
+    width: 120,
   },
 
   mainContainer: {

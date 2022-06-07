@@ -72,6 +72,7 @@ export default function Home({ navigation }) {
   useEffect(() => {
     onValue(galleryRef, (snapshot) => {
       setPhotos(Object.values(snapshot.val()).slice(-4));
+      //console.log(Object.values(snapshot.val()).slice(-4))
     });
   }, []);
   useEffect(() => {
