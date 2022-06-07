@@ -5,10 +5,13 @@ import { StyleSheet, View, Text, SafeAreaView, TouchableOpacity } from "react-na
 import { Camera, CameraType } from 'expo-camera';
 import Ionicons from "@expo/vector-icons/Ionicons"
 import moment from "moment"
+import * as ImagePicker from 'expo-image-picker';
 
 export default function TakePicture({ navigation }) {
     const [hasPermission, setHasPermission] = useState(null);
     const [type, setType] = useState(CameraType.back);
+    const [image, setImage] = useState(null);
+
     const cameraRef = useRef(null)
     const db = getDatabase()
     const auth = getAuth();
@@ -20,6 +23,25 @@ export default function TakePicture({ navigation }) {
             setHasPermission(status === 'granted');
         })();
     }, []);
+
+    const pickImage = async () => {
+        // No permissions request is necessary for launching the image library
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.All,
+            allowsEditing: true,
+            quality: 1,
+            base64: true,
+
+        }).then(photo => { return photo })
+        if ("base64" in result) {
+            push(ref(db, 'gallery/'), {
+                uri: 'data:image/jpg;base64,' + result.base64,
+                postedBy: user.uid,
+                time: moment().format('MMMM Do YYYY, h:mm a')
+            }).then(() => navigation.goBack())
+        }
+    };
+
     if (hasPermission === null) {
         return <View />;
     }
@@ -42,6 +64,7 @@ export default function TakePicture({ navigation }) {
                     postedBy: user.uid,
                     time: moment().format('MMMM Do YYYY, h:mm a')
                 })
+                navigation.goBack()
             } catch (e) {
                 //console.log(e)
             }
@@ -56,9 +79,7 @@ export default function TakePicture({ navigation }) {
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity
                         style={styles.takePhoto}
-                        onPress={() => {
-                            setType(type === CameraType.back ? CameraType.front : CameraType.back);
-                        }}>
+                        onPress={pickImage}>
                         <Ionicons name='cloud-upload-outline' size={40} color="white" />
                     </TouchableOpacity>
                     <TouchableOpacity

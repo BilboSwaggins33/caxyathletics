@@ -25,7 +25,7 @@ export default function Loading({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <ActivityIndicator />
+      <ActivityIndicator size="large" color="orange" />
     </View>
   );
 }
@@ -33,7 +33,6 @@ export default function Loading({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
     justifyContent: "center",
   },
 });

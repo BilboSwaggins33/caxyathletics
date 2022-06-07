@@ -11,6 +11,7 @@ import {
   Linking,
   Alert,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
 import {
   useFonts,

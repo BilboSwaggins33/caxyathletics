@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Image,
   Dimensions,
+  FlatList,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import "react-native-gesture-handler";
@@ -13,6 +14,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import Header from "../Components/Header";
 import { Button } from "react-native-paper";
 import { getAuth, signOut } from "firebase/auth";
+import { getDatabase, ref, set, onValue, update } from "firebase/database";
 import {
   useFonts,
   Montserrat_700Bold,
@@ -21,10 +23,19 @@ import {
 } from "@expo-google-fonts/montserrat";
 
 export default function Social({ navigation }) {
+  const [users, setUsers] = useState([]);
+  const db = getDatabase();
   const auth = getAuth();
   const user = auth.currentUser;
-  console.log(user.photoURL);
-
+  const usersRef = ref(db, "users/");
+  //console.log(user.photoURL)
+  useEffect(() => {
+    onValue(usersRef, (snapshot) => {
+      setUsers(
+        Object.values(snapshot.val()).sort((a, b) => a.points < b.points)
+      );
+    });
+  }, []);
   let [fontsLoaded] = useFonts({
     Montserrat_600SemiBold,
     Montserrat_700Bold,
@@ -78,9 +89,25 @@ export default function Social({ navigation }) {
         <Text style={{ fontFamily: "Montserrat_700Bold", fontSize: 20 }}>
           {user.displayName}
         </Text>
-      </View>
-      <View style={{ display: "flex", alignItems: "center" }}>
         <SignOutButton />
+      </View>
+      <View style={styles.headerContainer}>
+        <Image
+          style={styles.headerIcon}
+          source={require("../assets/icons8-leaderboard-48.png")}
+        />
+        <Text style={styles.headerText}>Leaderboard</Text>
+      </View>
+      <View style={styles.leaderboardContainer}>
+        <FlatList
+          data={users.slice(0, 3)}
+          contentContainerStyle={{ padding: 15 }}
+          renderItem={({ item, index }) => (
+            <Text style={styles.leaderboardText}>
+              {index + 1}. {item.name} : {item.points} points
+            </Text>
+          )}
+        />
       </View>
     </SafeAreaView>
   );
@@ -145,5 +172,10 @@ const styles = StyleSheet.create({
     marginLeft: 25,
     backgroundColor: "#F37121",
     borderRadius: 20,
+  },
+  leaderboardText: {
+    fontSize: 16,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "white",
   },
 });
