@@ -49,7 +49,8 @@ export default function Login({ navigation }) {
                             name: result.user.displayName,
                             email: result.user.email,
                             profileUrl: result.user.photoURL,
-                            points: 0
+                            points: 0,
+                            gamesAttended: 0,
                         })
                     }
                 })

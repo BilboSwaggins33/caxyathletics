@@ -15,10 +15,11 @@ export default function Social({ navigation }) {
   const auth = getAuth();
   const user = auth.currentUser
   const usersRef = ref(db, 'users/')
-  //console.log(user.photoURL)
+  const points = 0;
   useEffect(() => {
     onValue(usersRef, (snapshot) => {
       setUsers(Object.values(snapshot.val()).sort((a, b) => (a.points < b.points)))
+      points = users.find(o => o.uid == user.uid).points
     })
   }, [])
   let [fontsLoaded] = useFonts({
@@ -26,7 +27,8 @@ export default function Social({ navigation }) {
     Montserrat_700Bold,
     Montserrat_500Medium
   });
-
+  // <Text style={{ fontFamily: 'Montserrat_500Medium', fontSize: 16, marginVertical: 3 }}>Points (Season): {users.find(o => o.uid == user.uid).points}</Text>
+  // <Text style={{ fontFamily: 'Montserrat_500Medium', fontSize: 16, marginVertical: 3 }}>Total Points: {users.find(o => o.uid == user.uid).points}</Text>
   const SignOutButton = () => (
     <Button uppercase={false} style={{ backgroundColor: '#F37121', marginVertical: 50 }} labelStyle={{ fontFamily: "Montserrat_600SemiBold" }} mode="contained" onPress={() => {
       signOut(auth).then(() => {
@@ -50,6 +52,13 @@ export default function Social({ navigation }) {
       <View style={styles.profileContainer}>
         <Image style={{ width: 100, height: 100, marginVertical: 20, borderRadius: 100 }} source={{ uri: user.photoURL }} />
         <Text style={{ fontFamily: 'Montserrat_700Bold', fontSize: 20 }}>{user.displayName}</Text>
+        <View style={{ marginVertical: 20, alignItems: 'center', }}>
+          <Text style={{ fontFamily: 'Montserrat_600SemiBold', fontSize: 18, marginVertical: 3 }}>Statistics</Text>
+          <Text style={{ fontFamily: 'Montserrat_500Medium', fontSize: 16, marginVertical: 3 }}>Rank #{users.findIndex(o => o.uid == user.uid) + 1}</Text>
+          <Text style={{ fontFamily: 'Montserrat_500Medium', fontSize: 16, marginVertical: 3 }}>Points: {points}</Text>
+
+
+        </View>
         <SignOutButton />
       </View>
       <View style={styles.headerContainer}>
