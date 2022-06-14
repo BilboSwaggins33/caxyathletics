@@ -46,7 +46,7 @@ export default function RewardsStackScreen() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Group>
-        <Stack.Screen name="Rewards" component={Rewards} />
+        <Stack.Screen name="SeeRewards" component={Rewards} />
       </Stack.Group>
       <Stack.Group screenOptions={{ presentation: "modal" }}>
         <Stack.Screen name="Redeem" component={RedeemModal} />
@@ -57,7 +57,7 @@ export default function RewardsStackScreen() {
 
 function Rewards({ navigation }) {
   const [pointsLeft, setPointsLeft] = useState();
-  const { points } = useSelector((state) => state.userReducer);
+  var { points } = useSelector((state) => state.userReducer);
   const dispatch = useDispatch();
   const db = getDatabase();
   const maxPoints = 1000;
@@ -78,6 +78,7 @@ function Rewards({ navigation }) {
 
   useEffect(() => {
     dispatch(resetPoints);
+    updatePoints(0)
   }, []);
 
   useEffect(() => {

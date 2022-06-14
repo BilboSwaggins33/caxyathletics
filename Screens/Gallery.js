@@ -64,179 +64,60 @@ export default function Gallery({ navigation }) {
   } else {
     return (
       <SafeAreaView style={styles.container}>
-        <Header />
-        <Modal
-          animationType="slide"
-          transparent={false}
-          visible={modalVisible}
-          onRequestClose={() => {
-            setModalVisible(!modalVisible);
-          }}
-        >
-          <View style={styles.centeredView}>
-            <View style={styles.modalView}>
-              <View>
-                <Header />
-                <Modal
-                  animationType="slide"
-                  transparent={false}
-                  visible={modalVisible}
-                  onRequestClose={() => {
-                    setModalVisible(!modalVisible);
-                  }}
-                >
-                  <View style={styles.centeredView}>
-                    <View style={styles.modalView}>
-                      <View>
-                        <View
-                          style={{ flexDirection: "row", alignItems: "center" }}
-                        >
-                          <Image
-                            source={{ uri: img.profUrl }}
-                            style={{
-                              width: 25,
-                              height: 25,
-                              borderRadius: 25,
-                              marginRight: 10,
-                            }}
-                          />
-                          <Text style={styles.modalText}>{img.user}</Text>
-                        </View>
-                        <Text style={[styles.modalText, styles.time]}>
-                          {img.time}
-                        </Text>
-                      </View>
-                      <Image
-                        source={{ uri: img.uri }}
-                        style={{
-                          width: width,
-                          height: height - 200,
-                          borderRadius: 10,
-                        }}
-                      />
-                      <Button
-                        style={[styles.button, styles.buttonClose]}
-                        onPress={() => setModalVisible(!modalVisible)}
-                        uppercase={false}
-                      >
-                        <Text style={styles.textStyle}>Close</Text>
-                      </Button>
-                    </View>
+        <View>
+          <Header />
+          <Modal
+            animationType="slide"
+            transparent={false}
+            visible={modalVisible}
+            onRequestClose={() => {
+              setModalVisible(!modalVisible);
+            }}
+          >
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Image source={{ uri: img.profUrl }} style={{ width: 25, height: 25, borderRadius: 25, marginRight: 10 }} />
+                    <Text style={styles.modalText}>{img.user}</Text>
                   </View>
-                </Modal>
-                <View style={styles.sectionContainer}>
-                  <View style={styles.headerContainer}>
-                    <View
-                      style={{ flexDirection: "row", alignItems: "center" }}
-                    >
-                      <Image
-                        style={styles.headerIcon}
-                        source={require("../assets/icons8-photo-gallery-48.png")}
-                      />
-                      <Text style={styles.headerText}>Gallery</Text>
-                    </View>
-                    <Button
-                      onPress={() => {
-                        navigation.navigate("TakePicture");
-                      }}
-                      uppercase={false}
-                      icon="camera"
-                      style={{ backgroundColor: "#F37121" }}
-                      labelStyle={{ fontFamily: "Montserrat_700Bold" }}
-                      mode="contained"
-                    >
-                      Take Photo
-                    </Button>
-                  </View>
+                  <Text style={[styles.modalText, styles.time]}>{img.time}</Text>
                 </View>
-                <FlatList
-                  data={photos}
-                  numColumns={3}
-                  renderItem={({ item, index }) => (
-                    <TouchableOpacity
-                      onPress={() => {
-                        handlePicture(item);
-                      }}
-                      style={{
-                        aspectRatio: 1 / 1,
-                        width: "33.33%",
-                        height: undefined,
-                      }}
-                    >
-                      <Image
-                        source={{ uri: item.uri }}
-                        style={{ width: "100%", height: "100%" }}
-                      />
-                    </TouchableOpacity>
-                  )}
-                  contentContainerStyle={{ paddingBottom: 250 }}
-                />
-                <Text style={styles.modalText}>{img.user}</Text>
+                <Image source={{ uri: img.uri }} style={{ width: "100%", height: "auto", borderRadius: 10, aspectRatio: 9 / 16 }} />
+                <Button
+                  style={[styles.button, styles.buttonClose]}
+                  onPress={() => setModalVisible(!modalVisible)}
+                  uppercase={false}
+                >
+                  <Text style={styles.textStyle}>Close</Text>
+                </Button>
               </View>
-              <Text style={[styles.modalText, styles.time]}>{img.time}</Text>
             </View>
-            <Image
-              source={{ uri: img.uri }}
-              style={{
-                width: width - 80,
-                height: height - 250,
-                borderRadius: 10,
-              }}
-            />
-            <Button
-              style={[styles.button, styles.buttonClose]}
-              onPress={() => setModalVisible(!modalVisible)}
-              uppercase={false}
-            >
-              <Text style={styles.textStyle}>Close</Text>
-            </Button>
-          </View>
-        </Modal>
-        <View style={styles.sectionContainer}>
-          <View style={styles.headerContainer}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Image
-                style={styles.headerIcon}
-                source={require("../assets/icons8-photo-gallery-48.png")}
-              />
-              <Text style={styles.headerText}>Gallery</Text>
+          </Modal>
+          <View style={styles.sectionContainer}>
+            <View style={styles.headerContainer}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Image
+                  style={styles.headerIcon}
+                  source={require("../assets/icons8-photo-gallery-48.png")}
+                />
+                <Text style={styles.headerText}>Gallery</Text>
+              </View>
+              <Button onPress={() => { navigation.navigate("TakePicture") }} uppercase={false} icon="camera" style={{ backgroundColor: '#F37121' }} labelStyle={{ fontFamily: "Montserrat_700Bold" }} mode="contained" >
+                Take Photo
+              </Button>
             </View>
-            <Button
-              onPress={() => {
-                navigation.navigate("TakePicture");
-              }}
-              uppercase={false}
-              icon="camera"
-              style={{ backgroundColor: "#F37121" }}
-              labelStyle={{ fontFamily: "Montserrat_700Bold" }}
-              mode="contained"
-            >
-              Take Photo
-            </Button>
           </View>
+          <FlatList data={photos}
+            numColumns={3}
+            renderItem={({ item, index }) => (
+              <TouchableOpacity onPress={() => { handlePicture(item) }} style={{ aspectRatio: 1 / 1, width: "33.33%", height: undefined }}>
+                <Image source={{ uri: item.uri }} style={{ width: "100%", height: "100%" }} />
+              </TouchableOpacity>
+            )}
+            contentContainerStyle={{ paddingBottom: 250 }}
+          />
         </View>
-        <FlatList
-          data={photos}
-          numColumns={3}
-          renderItem={({ item, index }) => (
-            <TouchableOpacity
-              onPress={() => {
-                handlePicture(item);
-              }}
-              style={{
-                aspectRatio: 1 / 1,
-                width: "33.33%",
-                height: undefined,
-              }}
-            >
-              <Image
-                source={{ uri: item.uri }}
-                style={{ width: "100%", height: "100%" }}
-              />
-            </TouchableOpacity>
-          )}
-          contentContainerStyle={{ paddingBottom: 250 }}
-        />
       </SafeAreaView>
     );
   }
@@ -274,17 +155,9 @@ const styles = StyleSheet.create({
   modalView: {
     margin: 10,
     backgroundColor: "white",
-    borderRadius: 20,
     paddingVertical: 10,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+
   },
   button: {
     borderRadius: 10,

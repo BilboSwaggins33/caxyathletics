@@ -15,6 +15,7 @@ import Header from "../Components/Header";
 import { Button } from "react-native-paper";
 import { getAuth, signOut } from "firebase/auth";
 import { getDatabase, ref, set, onValue, update } from "firebase/database";
+import { useSelector } from "react-redux";
 import {
   useFonts,
   Montserrat_700Bold,
@@ -26,13 +27,14 @@ export default function Social({ navigation }) {
   const [users, setUsers] = useState([]);
   const db = getDatabase();
   const auth = getAuth();
-  const user = auth.currentUser
   const usersRef = ref(db, 'users/')
-  const points = 0;
+  const { user } = useSelector((state) => state.userReducer);
+  const { points } = useSelector((state) => state.userReducer)
+  console.log(points)
+
   useEffect(() => {
     onValue(usersRef, (snapshot) => {
       setUsers(Object.values(snapshot.val()).sort((a, b) => (a.points < b.points)))
-      points = users.find(o => o.uid == user.uid).points
     })
   }, [])
   let [fontsLoaded] = useFonts({
@@ -42,6 +44,7 @@ export default function Social({ navigation }) {
   });
   // <Text style={{ fontFamily: 'Montserrat_500Medium', fontSize: 16, marginVertical: 3 }}>Points (Season): {users.find(o => o.uid == user.uid).points}</Text>
   // <Text style={{ fontFamily: 'Montserrat_500Medium', fontSize: 16, marginVertical: 3 }}>Total Points: {users.find(o => o.uid == user.uid).points}</Text>
+
   const SignOutButton = () => (
     <Button
       uppercase={false}
@@ -88,6 +91,9 @@ export default function Social({ navigation }) {
         />
         <Text style={{ fontFamily: "Montserrat_700Bold", fontSize: 20 }}>
           {user.displayName}
+        </Text>
+        <Text style={{ fontFamily: "Montserrat_700Bold", fontSize: 20 }}>
+          {points}
         </Text>
         <SignOutButton />
       </View>

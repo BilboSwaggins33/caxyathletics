@@ -127,20 +127,14 @@ export default function Home({ navigation }) {
           </View>
           <TouchableOpacity onPress={handlePress}>
             <View style={styles.photoGallery}>
-              <FlatList
-                data={photos}
-                numColumns={2}
-                renderItem={({ item, index }) => (
+              {photos.slice(0, 4).map((item, index) => (
+                <View style={styles.gridView}>
                   <Image
                     source={{ uri: item.uri }}
-                    style={{
-                      aspectRatio: 1 / 1,
-                      width: "50%",
-                      height: undefined,
-                    }}
+                    style={styles.imageView}
                   />
-                )}
-              />
+                </View>
+              ))}
             </View>
           </TouchableOpacity>
         </ScrollView>
@@ -175,6 +169,7 @@ const width = Dimensions.get("window").width;
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#F6F4F4",
+    flex: 1
   },
 
   scroll: {
@@ -261,10 +256,22 @@ const styles = StyleSheet.create({
   },
 
   photoGallery: {
-    width: width - 50,
-    marginBottom: 25,
     backgroundColor: "white",
-    justifyContent: "center",
-    alignSelf: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
   },
+
+  gridView: {
+    width: '50%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    backgroundColor: 'white',
+  },
+
+  imageView: {
+    width: '100%',
+    alignSelf: 'center',
+    height: 'auto',
+    aspectRatio: '1/1'
+  }
 });

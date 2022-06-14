@@ -17,6 +17,8 @@ import {
   Montserrat_700Bold,
   Montserrat_600SemiBold,
 } from "@expo-google-fonts/montserrat";
+import { setUser } from "../redux/actions";
+import { useDispatch, useSelector } from "react-redux";
 
 //initializeApp(firebaseConfig)
 WebBrowser.maybeCompleteAuthSession();
@@ -56,7 +58,7 @@ export default function Login({ navigation }) {
               email: result.user.email,
               profileUrl: result.user.photoURL,
               points: 0,
-            });
+            })
           }
         });
 
