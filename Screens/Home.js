@@ -1,5 +1,18 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { StyleSheet, View, Text, SafeAreaView, ScrollView, Dimensions, TouchableOpacity, Image, Linking, Alert, FlatList, ActivityIndicator } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Text,
+  SafeAreaView,
+  ScrollView,
+  Dimensions,
+  TouchableOpacity,
+  Image,
+  Linking,
+  Alert,
+  FlatList,
+  ActivityIndicator,
+} from "react-native";
 import {
   useFonts,
   Montserrat_100Thin,
@@ -24,16 +37,14 @@ import {
 import AppLoading from "expo-app-loading";
 import NavBar from "../Components/NavBar";
 import Header from "../Components/Header";
-import { getAuth, signOut } from "firebase/auth"
+import { getAuth, signOut } from "firebase/auth";
 import { styleProps } from "react-native-web/dist/cjs/modules/forwardedProps";
 import AnnouncementModal from "../Components/AnnouncementModal";
 import { Provider } from "react-native-paper";
 import { getDatabase, ref, set, onValue, update } from "firebase/database";
 
-
 export default function Home({ navigation }) {
-
-  const auth = getAuth()
+  const auth = getAuth();
   let [fontsLoaded] = useFonts({
     Montserrat_100Thin,
     Montserrat_200ExtraLight,
@@ -56,15 +67,15 @@ export default function Home({ navigation }) {
   });
 
   const [eventClicked, setEventClicked] = useState(false);
-  const [photos, setPhotos] = useState([])
-  const db = getDatabase()
-  const galleryRef = ref(db, 'gallery/')
+  const [photos, setPhotos] = useState([]);
+  const db = getDatabase();
+  const galleryRef = ref(db, "gallery/");
   useEffect(() => {
     onValue(galleryRef, (snapshot) => {
-      setPhotos(Object.values(snapshot.val()).slice(-4))
+      setPhotos(Object.values(snapshot.val()).slice(-4));
       //console.log(Object.values(snapshot.val()).slice(-4))
-    })
-  }, [])
+    });
+  }, []);
   useEffect(() => {
     if (eventClicked) {
       window.location.assign("https://www.lfacaxys.org/");
@@ -72,9 +83,9 @@ export default function Home({ navigation }) {
   });
 
   const handlePress = () => {
-    console.log('presssed')
-    navigation.navigate("Gallery")
-  }
+    console.log("presssed");
+    navigation.navigate("Gallery");
+  };
 
   const lfaURL = "https://www.lfacaxys.org/";
 
@@ -116,10 +127,18 @@ export default function Home({ navigation }) {
           </View>
           <TouchableOpacity onPress={handlePress}>
             <View style={styles.photoGallery}>
-              <FlatList data={photos}
+              <FlatList
+                data={photos}
                 numColumns={2}
                 renderItem={({ item, index }) => (
-                  <Image source={{ uri: item.uri }} style={{ aspectRatio: 1 / 1, width: "50%", height: undefined }} />
+                  <Image
+                    source={{ uri: item.uri }}
+                    style={{
+                      aspectRatio: 1 / 1,
+                      width: "50%",
+                      height: undefined,
+                    }}
+                  />
                 )}
               />
             </View>
@@ -129,7 +148,6 @@ export default function Home({ navigation }) {
     );
   }
 }
-
 
 function MoreEventsBtn({ url }) {
   const handlePress = useCallback(async () => {
@@ -245,8 +263,8 @@ const styles = StyleSheet.create({
   photoGallery: {
     width: width - 50,
     marginBottom: 25,
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignSelf: 'center',
+    backgroundColor: "white",
+    justifyContent: "center",
+    alignSelf: "center",
   },
 });

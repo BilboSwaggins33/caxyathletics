@@ -1,17 +1,30 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Text, TouchableOpacity, Image, Dimensions, FlatList } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  Image,
+  Dimensions,
+  FlatList,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import "react-native-gesture-handler";
 import { createStackNavigator } from "@react-navigation/stack";
 import Header from "../Components/Header";
-import { Button } from "react-native-paper"
+import { Button } from "react-native-paper";
 import { getAuth, signOut } from "firebase/auth";
 import { getDatabase, ref, set, onValue, update } from "firebase/database";
-import { useFonts, Montserrat_700Bold, Montserrat_600SemiBold, Montserrat_500Medium } from "@expo-google-fonts/montserrat";
+import {
+  useFonts,
+  Montserrat_700Bold,
+  Montserrat_600SemiBold,
+  Montserrat_500Medium,
+} from "@expo-google-fonts/montserrat";
 
 export default function Social({ navigation }) {
-  const [users, setUsers] = useState([])
-  const db = getDatabase()
+  const [users, setUsers] = useState([]);
+  const db = getDatabase();
   const auth = getAuth();
   const user = auth.currentUser
   const usersRef = ref(db, 'users/')
@@ -25,19 +38,27 @@ export default function Social({ navigation }) {
   let [fontsLoaded] = useFonts({
     Montserrat_600SemiBold,
     Montserrat_700Bold,
-    Montserrat_500Medium
+    Montserrat_500Medium,
   });
   // <Text style={{ fontFamily: 'Montserrat_500Medium', fontSize: 16, marginVertical: 3 }}>Points (Season): {users.find(o => o.uid == user.uid).points}</Text>
   // <Text style={{ fontFamily: 'Montserrat_500Medium', fontSize: 16, marginVertical: 3 }}>Total Points: {users.find(o => o.uid == user.uid).points}</Text>
   const SignOutButton = () => (
-    <Button uppercase={false} style={{ backgroundColor: '#F37121', marginVertical: 50 }} labelStyle={{ fontFamily: "Montserrat_600SemiBold" }} mode="contained" onPress={() => {
-      signOut(auth).then(() => {
-        navigation.navigate('Login')
-        // Sign-out successful.
-      }).catch((error) => {
-        // An error happened.
-      });
-    }}>
+    <Button
+      uppercase={false}
+      style={{ backgroundColor: "#F37121", marginVertical: 50 }}
+      labelStyle={{ fontFamily: "Montserrat_600SemiBold" }}
+      mode="contained"
+      onPress={() => {
+        signOut(auth)
+          .then(() => {
+            navigation.navigate("Login");
+            // Sign-out successful.
+          })
+          .catch((error) => {
+            // An error happened.
+          });
+      }}
+    >
       Sign Out
     </Button>
   );
@@ -45,31 +66,46 @@ export default function Social({ navigation }) {
     <SafeAreaView style={styles.container}>
       <Header />
       <View style={styles.headerContainer}>
-        <Image style={styles.headerIcon} source={require("../assets/icons8-user-48.png")} />
+        <Image
+          style={styles.headerIcon}
+          source={require("../assets/icons8-user-48.png")}
+        />
         <Text style={styles.headerText}>Profile</Text>
-        <Image style={styles.settingsIcon} source={require("../assets/icons8-settings-48.png")} />
+        <Image
+          style={styles.settingsIcon}
+          source={require("../assets/icons8-settings-48.png")}
+        />
       </View>
       <View style={styles.profileContainer}>
-        <Image style={{ width: 100, height: 100, marginVertical: 20, borderRadius: 100 }} source={{ uri: user.photoURL }} />
-        <Text style={{ fontFamily: 'Montserrat_700Bold', fontSize: 20 }}>{user.displayName}</Text>
-        <View style={{ marginVertical: 20, alignItems: 'center', }}>
-          <Text style={{ fontFamily: 'Montserrat_600SemiBold', fontSize: 18, marginVertical: 3 }}>Statistics</Text>
-          <Text style={{ fontFamily: 'Montserrat_500Medium', fontSize: 16, marginVertical: 3 }}>Rank #{users.findIndex(o => o.uid == user.uid) + 1}</Text>
-          <Text style={{ fontFamily: 'Montserrat_500Medium', fontSize: 16, marginVertical: 3 }}>Points: {points}</Text>
-
-
-        </View>
+        <Image
+          style={{
+            width: 100,
+            height: 100,
+            marginVertical: 20,
+            borderRadius: 100,
+          }}
+          source={{ uri: user.photoURL }}
+        />
+        <Text style={{ fontFamily: "Montserrat_700Bold", fontSize: 20 }}>
+          {user.displayName}
+        </Text>
         <SignOutButton />
       </View>
       <View style={styles.headerContainer}>
-        <Image style={styles.headerIcon} source={require("../assets/icons8-leaderboard-48.png")} />
+        <Image
+          style={styles.headerIcon}
+          source={require("../assets/icons8-leaderboard-48.png")}
+        />
         <Text style={styles.headerText}>Leaderboard</Text>
       </View>
       <View style={styles.leaderboardContainer}>
-        <FlatList data={users.slice(0, 3)}
+        <FlatList
+          data={users.slice(0, 3)}
           contentContainerStyle={{ padding: 15 }}
           renderItem={({ item, index }) => (
-            <Text style={styles.leaderboardText}>{index + 1}. {item.name} : {item.points} points</Text>
+            <Text style={styles.leaderboardText}>
+              {index + 1}. {item.name} : {item.points} points
+            </Text>
           )}
         />
       </View>
@@ -113,7 +149,7 @@ const styles = StyleSheet.create({
   settingsIcon: {
     maxWidth: 30,
     maxHeight: 30,
-    marginLeft: 'auto'
+    marginLeft: "auto",
   },
 
   profileContainer: {
@@ -126,8 +162,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.7,
     shadowRadius: 20,
     marginLeft: 25,
-    display: 'flex',
-    alignItems: 'center',
+    display: "flex",
+    alignItems: "center",
   },
 
   leaderboardContainer: {
