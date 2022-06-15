@@ -4,7 +4,6 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-
 import CheckIn from "../Screens/CheckIn";
 import Home from "../Screens/Home";
 import Gallery from "../Screens/Gallery";

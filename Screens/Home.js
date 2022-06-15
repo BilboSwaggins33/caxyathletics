@@ -13,84 +13,46 @@ import {
   FlatList,
   ActivityIndicator,
 } from "react-native";
-import {
-  useFonts,
-  Montserrat_100Thin,
-  Montserrat_200ExtraLight,
-  Montserrat_300Light,
-  Montserrat_400Regular,
-  Montserrat_500Medium,
-  Montserrat_600SemiBold,
-  Montserrat_700Bold,
-  Montserrat_800ExtraBold,
-  Montserrat_900Black,
-  Montserrat_100Thin_Italic,
-  Montserrat_200ExtraLight_Italic,
-  Montserrat_300Light_Italic,
-  Montserrat_400Regular_Italic,
-  Montserrat_500Medium_Italic,
-  Montserrat_600SemiBold_Italic,
-  Montserrat_700Bold_Italic,
-  Montserrat_800ExtraBold_Italic,
-  Montserrat_900Black_Italic,
-} from "@expo-google-fonts/montserrat";
-import AppLoading from "expo-app-loading";
-import NavBar from "../Components/NavBar";
 import Header from "../Components/Header";
 import { getAuth, signOut } from "firebase/auth";
 import { styleProps } from "react-native-web/dist/cjs/modules/forwardedProps";
 import AnnouncementModal from "../Components/AnnouncementModal";
 import { Provider } from "react-native-paper";
 import { getDatabase, ref, set, onValue, update } from "firebase/database";
+import * as Font from 'expo-font';
+import { MontserratFont } from "../assets/fonts";
 
 export default function Home({ navigation }) {
-  const auth = getAuth();
-  let [fontsLoaded] = useFonts({
-    Montserrat_100Thin,
-    Montserrat_200ExtraLight,
-    Montserrat_300Light,
-    Montserrat_400Regular,
-    Montserrat_500Medium,
-    Montserrat_600SemiBold,
-    Montserrat_700Bold,
-    Montserrat_800ExtraBold,
-    Montserrat_900Black,
-    Montserrat_100Thin_Italic,
-    Montserrat_200ExtraLight_Italic,
-    Montserrat_300Light_Italic,
-    Montserrat_400Regular_Italic,
-    Montserrat_500Medium_Italic,
-    Montserrat_600SemiBold_Italic,
-    Montserrat_700Bold_Italic,
-    Montserrat_800ExtraBold_Italic,
-    Montserrat_900Black_Italic,
-  });
-
   const [eventClicked, setEventClicked] = useState(false);
+  const [fontsLoaded, setFontsLoaded] = useState(false);
   const [photos, setPhotos] = useState([]);
   const db = getDatabase();
   const galleryRef = ref(db, "gallery/");
+  async function loadFont() {
+    await Font.loadAsync(MontserratFont);
+    setFontsLoaded(true)
+  }
   useEffect(() => {
+    loadFont()
     onValue(galleryRef, (snapshot) => {
       setPhotos(Object.values(snapshot.val()).slice(-4));
       //console.log(Object.values(snapshot.val()).slice(-4))
     });
+
   }, []);
-  useEffect(() => {
-    if (eventClicked) {
-      window.location.assign("https://www.lfacaxys.org/");
-    }
-  });
+
+  if (eventClicked) {
+    window.location.assign("https://www.lfacaxys.org/");
+  }
 
   const handlePress = () => {
-    console.log("presssed");
     navigation.navigate("Gallery");
   };
 
   const lfaURL = "https://www.lfacaxys.org/";
 
   if (!fontsLoaded) {
-    return <AppLoading />;
+    return null
   } else {
     return (
       <SafeAreaView style={styles.container}>
@@ -128,7 +90,7 @@ export default function Home({ navigation }) {
           <TouchableOpacity onPress={handlePress}>
             <View style={styles.photoGallery}>
               {photos.slice(0, 4).map((item, index) => (
-                <View style={styles.gridView}>
+                <View key={index} style={styles.gridView}>
                   <Image
                     source={{ uri: item.uri }}
                     style={styles.imageView}
@@ -190,7 +152,7 @@ const styles = StyleSheet.create({
 
   headerText: {
     fontSize: 16,
-    fontFamily: "Montserrat_700Bold",
+    fontFamily: "Montserrat-Bold",
     color: "#3E3939",
     marginLeft: 10,
   },
@@ -209,7 +171,7 @@ const styles = StyleSheet.create({
   },
 
   announcementTitle: {
-    fontFamily: "Montserrat_700Bold",
+    fontFamily: "Montserrat-Bold",
     color: "white",
     fontSize: 16,
     marginLeft: 15,
@@ -231,7 +193,7 @@ const styles = StyleSheet.create({
 
   infoText: {
     color: "white",
-    fontFamily: "Montserrat_700Bold",
+    fontFamily: "Montserrat-Bold",
     fontSize: 12,
   },
 
@@ -251,7 +213,7 @@ const styles = StyleSheet.create({
 
   eventsText: {
     fontSize: 16,
-    fontFamily: "Montserrat_700Bold",
+    fontFamily: "Montserrat-Bold",
     color: "#F37121",
   },
 
@@ -272,6 +234,6 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
     height: 'auto',
-    aspectRatio: '1/1'
+    aspectRatio: 1 / 1
   }
 });

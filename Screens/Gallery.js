@@ -10,38 +10,33 @@ import {
   TouchableOpacity,
   Modal,
   Dimensions,
+  ScrollView
 } from "react-native";
-import { initializeApp } from "@firebase/app";
-import * as WebBrowser from "expo-web-browser";
-import { firebaseConfig } from "../config";
-import AppLoading from "expo-app-loading";
-import {
-  useFonts,
-  Montserrat_700Bold,
-  Montserrat_600SemiBold,
-  Montserrat_500Medium,
-} from "@expo-google-fonts/montserrat";
-import NavBar from "../Components/NavBar";
 import Header from "../Components/Header";
 import { Button } from "react-native-paper";
+import * as Font from 'expo-font'
+import { MontserratFont } from "../assets/fonts";
 
 export default function Gallery({ navigation }) {
   const [photos, setPhotos] = useState([]);
+  const [fontsLoaded, setFontsLoaded] = useState(false)
   const [modalVisible, setModalVisible] = useState(false);
   const [img, setIMG] = useState({});
   const db = getDatabase();
   const galleryRef = ref(db, "gallery/");
+  async function loadFont() {
+    await Font.loadAsync(MontserratFont);
+    setFontsLoaded(true)
+  }
   useEffect(() => {
+    loadFont()
     onValue(galleryRef, (snapshot) => {
       setPhotos(Object.values(snapshot.val()));
     });
   }, []);
 
-  let [fontsLoaded] = useFonts({
-    Montserrat_600SemiBold,
-    Montserrat_700Bold,
-    Montserrat_500Medium,
-  });
+
+
   const height = Dimensions.get("window").height;
   const width = Dimensions.get("window").width;
   const handlePicture = (item) => {
@@ -60,20 +55,44 @@ export default function Gallery({ navigation }) {
   };
 
   if (!fontsLoaded) {
-    return <AppLoading />;
+    return null;
   } else {
     return (
       <SafeAreaView style={styles.container}>
-        <View>
+        <ScrollView stickyHeaderIndices={[0]}>
           <Header />
+          <View style={styles.sectionContainer}>
+            <View style={styles.headerContainer}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Image
+                  style={styles.headerIcon}
+                  source={require("../assets/icons8-photo-gallery-48.png")}
+                />
+                <Text style={styles.headerText}>Gallery</Text>
+              </View>
+              <Button onPress={() => { navigation.navigate("TakePicture") }} uppercase={false} icon="camera" style={{ backgroundColor: '#F37121' }} labelStyle={{ fontFamily: "Montserrat-Bold" }} mode="contained" >
+                Take Photo
+              </Button>
+            </View>
+          </View>
+          <View style={styles.photoGallery}>
+            {
+              photos.map((item, index) => (
+                <View key={index} style={styles.gridView}>
+                  <TouchableOpacity onPress={() => { handlePicture(item) }}>
+                    <Image source={{ uri: item.uri }} style={styles.imageView} />
+                  </TouchableOpacity>
+                </View>
+              ))
+            }
+          </View>
           <Modal
             animationType="slide"
             transparent={false}
             visible={modalVisible}
             onRequestClose={() => {
               setModalVisible(!modalVisible);
-            }}
-          >
+            }}>
             <View style={styles.centeredView}>
               <View style={styles.modalView}>
                 <View>
@@ -94,30 +113,7 @@ export default function Gallery({ navigation }) {
               </View>
             </View>
           </Modal>
-          <View style={styles.sectionContainer}>
-            <View style={styles.headerContainer}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Image
-                  style={styles.headerIcon}
-                  source={require("../assets/icons8-photo-gallery-48.png")}
-                />
-                <Text style={styles.headerText}>Gallery</Text>
-              </View>
-              <Button onPress={() => { navigation.navigate("TakePicture") }} uppercase={false} icon="camera" style={{ backgroundColor: '#F37121' }} labelStyle={{ fontFamily: "Montserrat_700Bold" }} mode="contained" >
-                Take Photo
-              </Button>
-            </View>
-          </View>
-          <FlatList data={photos}
-            numColumns={3}
-            renderItem={({ item, index }) => (
-              <TouchableOpacity onPress={() => { handlePicture(item) }} style={{ aspectRatio: 1 / 1, width: "33.33%", height: undefined }}>
-                <Image source={{ uri: item.uri }} style={{ width: "100%", height: "100%" }} />
-              </TouchableOpacity>
-            )}
-            contentContainerStyle={{ paddingBottom: 250 }}
-          />
-        </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -126,19 +122,17 @@ export default function Gallery({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#F6F4F4",
-  },
-  sectionContainer: {
-    marginTop: 20,
+    flex: 1
   },
   headerContainer: {
     margin: 20,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "space-between"
   },
   headerText: {
     fontSize: 16,
-    fontFamily: "Montserrat_700Bold",
+    fontFamily: "Montserrat-Bold",
     color: "#3E3939",
     marginLeft: 10,
   },
@@ -172,7 +166,7 @@ const styles = StyleSheet.create({
   },
   modalText: {
     textAlign: "center",
-    fontFamily: "Montserrat_500Medium",
+    fontFamily: "Montserrat-Medium",
   },
   textStyle: {
     color: "white",
@@ -182,4 +176,23 @@ const styles = StyleSheet.create({
   time: {
     marginVertical: 5,
   },
+  photoGallery: {
+    backgroundColor: "#F6F4F4",
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+
+  gridView: {
+    width: '33.33%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    backgroundColor: 'white',
+  },
+
+  imageView: {
+    width: '100%',
+    alignSelf: 'center',
+    height: 'auto',
+    aspectRatio: 1 / 1
+  }
 });

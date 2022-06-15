@@ -16,16 +16,6 @@ import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../Components/Header";
 import { Portal, Modal } from "react-native-paper";
-import {
-  useFonts,
-  Montserrat_400Regular,
-  Montserrat_500Medium,
-  Montserrat_600SemiBold,
-  Montserrat_700Bold,
-  Montserrat_800ExtraBold,
-  Montserrat_900Black,
-} from "@expo-google-fonts/montserrat";
-import AppLoading from "expo-app-loading";
 import CircularProgress from "react-native-circular-progress-indicator";
 import { IconButton } from "react-native-paper";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -39,7 +29,8 @@ import {
 } from "../redux/actions";
 import { setPoints } from "../redux/actions";
 import { rewardsList } from "../Data/rewards";
-
+import { MontserratFont } from "../assets/fonts";
+import * as Font from 'expo-font'
 const Stack = createStackNavigator();
 
 export default function RewardsStackScreen() {
@@ -57,7 +48,8 @@ export default function RewardsStackScreen() {
 
 function Rewards({ navigation }) {
   const [pointsLeft, setPointsLeft] = useState();
-  var { points } = useSelector((state) => state.userReducer);
+  const [fontsLoaded, setFontsLoaded] = useState(false)
+  const { points } = useSelector((state) => state.userReducer);
   const dispatch = useDispatch();
   const db = getDatabase();
   const maxPoints = 1000;
@@ -67,16 +59,12 @@ function Rewards({ navigation }) {
   if (user !== null) {
     uid = user.uid;
   }
-  let [fontsLoaded] = useFonts({
-    Montserrat_400Regular,
-    Montserrat_500Medium,
-    Montserrat_600SemiBold,
-    Montserrat_700Bold,
-    Montserrat_800ExtraBold,
-    Montserrat_900Black,
-  });
-
+  async function loadFont() {
+    await Font.loadAsync(MontserratFont);
+    setFontsLoaded(true)
+  }
   useEffect(() => {
+    loadFont()
     dispatch(resetPoints);
     updatePoints(0)
   }, []);
@@ -95,6 +83,20 @@ function Rewards({ navigation }) {
     });
   }
 
+  function changePoints(n) {
+    console.log('changed points by', n)
+    let total = points + n;
+    if (total < maxPoints) {
+      //console.log(total);
+      dispatch(setPoints(points, n));
+      // eventualy change updatePoints to timer
+      //updatePoints(total);
+    } else {
+      dispatch(setMaxPoints(maxPoints));
+      //updatePoints(maxPoints);
+    }
+  }
+
   function checkPointsLeft() {
     if (points !== 0 && points % 100 === 0) {
       setPointsLeft(0);
@@ -104,7 +106,7 @@ function Rewards({ navigation }) {
   }
 
   if (!fontsLoaded) {
-    return <AppLoading />;
+    return null;
   } else {
     return (
       <SafeAreaView style={styles.container}>
@@ -130,7 +132,7 @@ function Rewards({ navigation }) {
                 inActiveStrokeOpacity={0.2}
                 radius={100}
                 progressValueFontSize={36}
-                progressValueStyle={{ fontFamily: "Montserrat_700Bold" }}
+                progressValueStyle={{ fontFamily: "Montserrat-Bold" }}
                 subtitle={"Points"}
                 subtitleStyle={styles.rewardsText}
               />
@@ -140,16 +142,7 @@ function Rewards({ navigation }) {
               color="black"
               size={36}
               onPress={() => {
-                let total = points + 50;
-                if (total < maxPoints) {
-                  console.log(total);
-                  dispatch(setPoints(points, 50));
-                  // eventualy change updatePoints to timer
-                  updatePoints(total);
-                } else {
-                  dispatch(setMaxPoints(maxPoints));
-                  updatePoints(maxPoints);
-                }
+                changePoints(50)
               }}
               style={{ position: "relative" }}
             />
@@ -275,7 +268,7 @@ const styles = StyleSheet.create({
   },
 
   redeemedText: {
-    fontFamily: "Montserrat_700Bold",
+    fontFamily: "Montserrat-Bold",
     color: "white",
     fontSize: 24,
   },
@@ -289,7 +282,7 @@ const styles = StyleSheet.create({
   },
 
   pointsText: {
-    fontFamily: "Montserrat_700Bold",
+    fontFamily: "Montserrat-Bold",
   },
 
   modalHeaderContainer: {
@@ -300,7 +293,7 @@ const styles = StyleSheet.create({
   },
 
   modalHeaderText: {
-    fontFamily: "Montserrat_700Bold",
+    fontFamily: "Montserrat-Bold",
     fontSize: 16,
     left: -24,
   },
@@ -323,20 +316,20 @@ const styles = StyleSheet.create({
   },
 
   itemNumText: {
-    fontFamily: "Montserrat_700Bold",
+    fontFamily: "Montserrat-Bold",
     transform: [{ rotate: "270deg" }],
   },
 
   itemPointsText: {
-    fontFamily: "Montserrat_700Bold",
+    fontFamily: "Montserrat-Bold",
   },
 
   itemNameText: {
-    fontFamily: "Montserrat_700Bold",
+    fontFamily: "Montserrat-Bold",
   },
 
   itemDescriptionText: {
-    fontFamily: "Montserrat_400Regular",
+    fontFamily: "Montserrat-Medium",
   },
 
   redeemButton: {
@@ -356,7 +349,7 @@ const styles = StyleSheet.create({
   },
 
   redeemBtnText: {
-    fontFamily: "Montserrat_400Regular",
+    fontFamily: "Montserrat-Medium",
     color: "white",
   },
 
@@ -388,14 +381,14 @@ const styles = StyleSheet.create({
   },
 
   headerText: {
-    fontFamily: "Montserrat_700Bold",
+    fontFamily: "Montserrat-Bold",
     fontSize: 16,
     color: "#3E3939",
     marginLeft: 5,
   },
 
   rewardsText: {
-    fontFamily: "Montserrat_700Bold",
+    fontFamily: "Montserrat-Bold",
     // opacity: 0.2,
     color: "black",
     fontSize: 20,
@@ -418,7 +411,7 @@ const styles = StyleSheet.create({
 
   subtitleText: {
     marginLeft: 10,
-    fontFamily: "Montserrat_500Medium",
+    fontFamily: "Montserrat-Regular",
     fontSize: 16,
   },
 
@@ -437,6 +430,6 @@ const styles = StyleSheet.create({
 
   redeemText: {
     color: "white",
-    fontFamily: "Montserrat_700Bold",
+    fontFamily: "Montserrat-Bold",
   },
 });

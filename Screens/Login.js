@@ -9,28 +9,28 @@ import {
   signInWithCredential,
 } from "firebase/auth";
 import * as WebBrowser from "expo-web-browser";
-import { firebaseConfig } from "../config";
-import AppLoading from "expo-app-loading";
 import { Button } from "react-native-paper";
-import {
-  useFonts,
-  Montserrat_700Bold,
-  Montserrat_600SemiBold,
-} from "@expo-google-fonts/montserrat";
-import { setUser } from "../redux/actions";
-import { useDispatch, useSelector } from "react-redux";
+import * as Font from 'expo-font'
+import { MontserratFont } from '../assets/fonts'
+
 
 //initializeApp(firebaseConfig)
 WebBrowser.maybeCompleteAuthSession();
 //https://auth.expo.io/@anonymous/caxy-athletics-2-77c481ca-9e93-4d00-84e6-ec3ca215bc57
-export default function Login({ navigation }) {
+export default function Login() {
   //746295234450-suacf94k1rspa2b7gmh3ut80ujacicin.apps.googleusercontent.com
+  const [fontsLoaded, setFontsLoaded] = useState(false)
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     clientId:
       "746295234450-suacf94k1rspa2b7gmh3ut80ujacicin.apps.googleusercontent.com",
   });
+  async function loadFont() {
+    await Font.loadAsync(MontserratFont);
+    setFontsLoaded(true)
+  }
 
   useEffect(() => {
+    loadFont()
     if (response?.type === "success") {
       const { id_token } = response.params;
       //console.log(response.params, id_token)
@@ -40,10 +40,9 @@ export default function Login({ navigation }) {
       //const credential = provider.credential(id_token);
       signInWithCredential(auth, credential).then((result) => {
         const db = getDatabase();
-        console.log(result);
         //console.log(result.user.uid, result.user.displayName, result.user.email, result.user.photoURL)
-
         onValue(ref(db, "users/" + result.user.uid), (snapshot) => {
+          console.log('user info:', snapshot.val())
           if (snapshot.exists()) {
             update(ref(db, "users/" + result.user.uid), {
               uid: result.user.uid,
@@ -62,16 +61,10 @@ export default function Login({ navigation }) {
           }
         });
 
-        //writeUserData(result.user.uid, result.user.displayName, result.email, result.photoURL)
-        navigation.navigate("Main");
       });
     }
   }, [response]);
 
-  let [fontsLoaded] = useFonts({
-    Montserrat_600SemiBold,
-    Montserrat_700Bold,
-  });
 
   const SignInButton = () => (
     <Button
@@ -79,7 +72,7 @@ export default function Login({ navigation }) {
       uppercase={false}
       icon="google"
       style={{ backgroundColor: "#F37121" }}
-      labelStyle={{ fontFamily: "Montserrat_700Bold" }}
+      labelStyle={{ fontFamily: "Montserrat-Bold" }}
       mode="contained"
       onPress={() => {
         promptAsync();
@@ -90,7 +83,7 @@ export default function Login({ navigation }) {
   );
 
   if (!fontsLoaded) {
-    return <AppLoading />;
+    return null;
   } else {
     return (
       <View style={styles.container}>
@@ -98,7 +91,7 @@ export default function Login({ navigation }) {
           <Text
             style={{
               color: "#F37121",
-              fontFamily: "Montserrat_700Bold",
+              fontFamily: "Montserrat-Bold",
               fontSize: 30,
             }}
           >
@@ -107,7 +100,7 @@ export default function Login({ navigation }) {
           <Text
             style={{
               color: "#F37121",
-              fontFamily: "Montserrat_700Bold",
+              fontFamily: "Montserrat-Bold",
               fontSize: 40,
             }}
           >

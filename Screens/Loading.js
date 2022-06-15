@@ -8,28 +8,14 @@ import { setUser } from "../redux/actions";
 import { useDispatch, useSelector } from "react-redux";
 
 export default function Loading({ navigation }) {
-  const firebaseApp = initializeApp(firebaseConfig);
-  const auth = getAuth(firebaseApp);
   const dispatch = useDispatch()
   const { user } = useSelector((state) => state.userReducer);
 
 
 
   useEffect(() => {
-    checkIfLoggedIn();
   }, []);
 
-  function checkIfLoggedIn() {
-    onAuthStateChanged(auth, (u) => {
-      dispatch(setUser(u))
-      console.log(user)
-      if (u) {
-        navigation.navigate("Main");
-      } else {
-        navigation.navigate("Login");
-      }
-    });
-  }
 
   return (
     <View style={styles.container}>

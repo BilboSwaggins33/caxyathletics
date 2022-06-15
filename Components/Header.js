@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   StyleSheet,
   View,
@@ -8,55 +8,16 @@ import {
   FlatList,
 } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import {
-  useFonts,
-  Montserrat_100Thin,
-  Montserrat_200ExtraLight,
-  Montserrat_300Light,
-  Montserrat_400Regular,
-  Montserrat_500Medium,
-  Montserrat_600SemiBold,
-  Montserrat_700Bold,
-  Montserrat_800ExtraBold,
-  Montserrat_900Black,
-  Montserrat_100Thin_Italic,
-  Montserrat_200ExtraLight_Italic,
-  Montserrat_300Light_Italic,
-  Montserrat_400Regular_Italic,
-  Montserrat_500Medium_Italic,
-  Montserrat_600SemiBold_Italic,
-  Montserrat_700Bold_Italic,
-  Montserrat_800ExtraBold_Italic,
-  Montserrat_900Black_Italic,
-} from "@expo-google-fonts/montserrat";
-import AppLoading from "expo-app-loading";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useCollapsibleHeader } from "react-navigation-collapsible";
 import { useSelector } from "react-redux";
 import { getDatabase, ref, set, onValue, update } from "firebase/database";
+import * as Font from 'expo-font';
+import { MontserratFont } from "../assets/fonts";
 
 export default function Header() {
-  let [fontsLoaded] = useFonts({
-    Montserrat_100Thin,
-    Montserrat_200ExtraLight,
-    Montserrat_300Light,
-    Montserrat_400Regular,
-    Montserrat_500Medium,
-    Montserrat_600SemiBold,
-    Montserrat_700Bold,
-    Montserrat_800ExtraBold,
-    Montserrat_900Black,
-    Montserrat_100Thin_Italic,
-    Montserrat_200ExtraLight_Italic,
-    Montserrat_300Light_Italic,
-    Montserrat_400Regular_Italic,
-    Montserrat_500Medium_Italic,
-    Montserrat_600SemiBold_Italic,
-    Montserrat_700Bold_Italic,
-    Montserrat_800ExtraBold_Italic,
-    Montserrat_900Black_Italic,
-  });
   const { points } = useSelector((state) => state.userReducer);
+  const [fontsLoaded, setFontsLoaded] = useState(false);
 
   const { onScroll, containerPaddingTop, scrollIndicatorInsetTop, translateY } =
     useCollapsibleHeader({
@@ -69,11 +30,19 @@ export default function Header() {
 
   const stickyHeaderHeight = 64;
 
+  async function loadFont() {
+    await Font.loadAsync(MontserratFont);
+    setFontsLoaded(true)
+  }
+
+  useEffect(() => {
+    loadFont()
+  }, [])
+
   // const db = getDatabase();
   // const ref = db.ref("users");
-
   if (!fontsLoaded) {
-    return <AppLoading />;
+    return null
   } else {
     return (
       <View style={styles.headerContainer}>
@@ -115,7 +84,7 @@ const styles = StyleSheet.create({
   caxyAthleticsTxt: {
     fontSize: 20,
     color: "#3E3939",
-    fontFamily: "Montserrat_700Bold",
+    fontFamily: "Montserrat-Bold",
     justifyContent: "center",
     paddingLeft: 10,
   },
@@ -138,6 +107,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: "center",
     color: "white",
-    fontFamily: "Montserrat_700Bold",
+    fontFamily: "Montserrat-Bold",
   },
 });

@@ -13,18 +13,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Location from "expo-location";
-import {
-  useFonts,
-  Montserrat_100Thin,
-  Montserrat_200ExtraLight,
-  Montserrat_300Light,
-  Montserrat_400Regular,
-  Montserrat_500Medium,
-  Montserrat_600SemiBold,
-  Montserrat_700Bold,
-} from "@expo-google-fonts/montserrat";
+import * as Font from 'expo-font'
+import { MontserratFont } from "../assets/fonts";
 import Header from "../Components/Header";
-import AppLoading from "expo-app-loading";
 import EventView from "../Components/EventView";
 import { Portal, ActivityIndicator, Modal } from "react-native-paper";
 import InGame from "./InGame";
@@ -37,17 +28,12 @@ export default function CheckIn() {
   const [visible, setVisible] = useState(false);
   const [inLocation, setInLocation] = useState(null);
   const [inGame, setInGame] = useState(false);
+  const [fontsLoaded, setFontsLoaded] = useState(false)
 
-  let [fontsLoaded] = useFonts({
-    Montserrat_100Thin,
-    Montserrat_200ExtraLight,
-    Montserrat_300Light,
-    Montserrat_400Regular,
-    Montserrat_500Medium,
-    Montserrat_600SemiBold,
-    Montserrat_700Bold,
-  });
-
+  async function loadFont() {
+    await Font.loadAsync(MontserratFont);
+    setFontsLoaded(true)
+  }
   const hideModal = () => {
     setVisible(false);
     setInLocation(null);
@@ -74,7 +60,7 @@ export default function CheckIn() {
           alert("Enable Location Services");
         }
       }
-    })();
+    })(loadFont());
   }, []);
 
   let text = "Waiting...";
@@ -136,7 +122,7 @@ export default function CheckIn() {
     return inside;
   }
   if (!fontsLoaded) {
-    return <AppLoading />;
+    return null;
   } else {
     return (
       <SafeAreaView style={styles.safe}>
@@ -242,7 +228,7 @@ const styles = StyleSheet.create({
 
   headerText: {
     fontSize: 16,
-    fontFamily: "Montserrat_700Bold",
+    fontFamily: "Montserrat-Bold",
     color: "#3E3939",
     marginLeft: 10,
   },
@@ -281,7 +267,7 @@ const styles = StyleSheet.create({
 
   checkInText: {
     color: "white",
-    fontFamily: "Montserrat_700Bold",
+    fontFamily: "Montserrat-Bold",
     fontSize: 24,
     paddingLeft: 5,
   },

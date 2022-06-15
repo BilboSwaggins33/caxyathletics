@@ -1,11 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, Image, Dimensions } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { Modal, Portal, Provider, Button } from "react-native-paper";
+import * as Font from 'expo-font'
+import { MontserratFont } from "../assets/fonts";
 
 export default function AnnouncementModal() {
   const [visible, setVisible] = useState(false);
-
+  const [fontsLoaded, setFontsLoaded] = useState(false)
+  async function loadFont() {
+    await Font.loadAsync(MontserratFont);
+    setFontsLoaded(true)
+  }
+  useEffect(() => {
+    loadFont()
+  }, []);
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
   const containerStyle = {
@@ -71,7 +80,7 @@ const styles = StyleSheet.create({
   },
 
   announcementTitle: {
-    fontFamily: "Montserrat_700Bold",
+    fontFamily: "Montserrat-Bold",
     color: "white",
     fontSize: 16,
     marginLeft: 15,
@@ -93,7 +102,7 @@ const styles = StyleSheet.create({
 
   infoText: {
     color: "white",
-    fontFamily: "Montserrat_700Bold",
+    fontFamily: "Montserrat-Bold",
     fontSize: 12,
     marginLeft: 10,
   },
