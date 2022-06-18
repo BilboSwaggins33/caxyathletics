@@ -5,6 +5,7 @@ export const rewardsList = [
     points: 100,
     redeemed: true,
     description: "item description",
+    image: require("../assets/44979_127698_5440_XH242CN_M_-481827436__v9.png"),
   },
   {
     id: 2,
@@ -12,6 +13,7 @@ export const rewardsList = [
     points: 200,
     redeemed: false,
     description: "item description",
+    image: require("../assets/44979_127698_5440_XH242CN_M_-481827436__v9.png"),
   },
   {
     id: 3,
@@ -19,6 +21,7 @@ export const rewardsList = [
     points: 300,
     redeemed: false,
     description: "item description",
+    image: require("../assets/44979_127698_5440_XH242CN_M_-481827436__v9.png"),
   },
   {
     id: 4,
@@ -26,6 +29,7 @@ export const rewardsList = [
     points: 400,
     redeemed: false,
     description: "item description",
+    image: require("../assets/44979_127698_5440_XH242CN_M_-481827436__v9.png"),
   },
   {
     id: 5,
@@ -33,6 +37,7 @@ export const rewardsList = [
     points: 500,
     redeemed: false,
     description: "item description",
+    image: require("../assets/44979_127698_5440_XH242CN_M_-481827436__v9.png"),
   },
   {
     id: 6,
@@ -40,6 +45,7 @@ export const rewardsList = [
     points: 600,
     redeemed: false,
     description: "item description",
+    image: require("../assets/44979_127698_5440_XH242CN_M_-481827436__v9.png"),
   },
   {
     id: 7,
@@ -47,6 +53,7 @@ export const rewardsList = [
     points: 700,
     redeemed: false,
     description: "item description asdoiasdasdasdoasiodioasdioasiod asdas as",
+    image: require("../assets/44979_127698_5440_XH242CN_M_-481827436__v9.png"),
   },
   {
     id: 8,
@@ -54,6 +61,7 @@ export const rewardsList = [
     points: 800,
     redeemed: false,
     description: "item description",
+    image: require("../assets/44979_127698_5440_XH242CN_M_-481827436__v9.png"),
   },
   {
     id: 9,
@@ -61,6 +69,7 @@ export const rewardsList = [
     points: 900,
     redeemed: false,
     description: "item description",
+    image: require("../assets/44979_127698_5440_XH242CN_M_-481827436__v9.png"),
   },
   {
     id: 10,
@@ -68,5 +77,6 @@ export const rewardsList = [
     points: 1000,
     redeemed: false,
     description: "item description",
+    image: require("../assets/44979_127698_5440_XH242CN_M_-481827436__v9.png"),
   },
 ];

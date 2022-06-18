@@ -19,43 +19,45 @@ export default function App() {
   const firebaseApp = initializeApp(firebaseConfig);
 
   const auth = getAuth(firebaseApp);
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const { user } = useSelector((state) => state.userReducer);
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     onAuthStateChanged(auth, (u) => {
       if (u) {
-        dispatch(setUser(u))
+        dispatch(setUser(u));
       } else {
-        dispatch(setUser(undefined))
+        dispatch(setUser(undefined));
         //navigation.navigate("Login");
       }
-      setIsLoading(false)
+      setIsLoading(false);
     });
-  }, [])
-
+  }, []);
 
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        {isLoading ? (<Stack.Screen
-          name="Loading"
-          component={Loading}
-          options={{ headerShown: false }}
-        />) : user ? (
+        {isLoading ? (
+          <Stack.Screen
+            name="Loading"
+            component={Loading}
+            options={{ headerShown: false }}
+          />
+        ) : user ? (
           <Stack.Screen
             name="Main"
             component={NavBar}
             options={{ headerShown: false }}
-          />) :
-          (<Stack.Screen
+          />
+        ) : (
+          <Stack.Screen
             name="Login"
             component={Login}
             options={{ headerShown: false }}
-          />)}
+          />
+        )}
       </Stack.Navigator>
     </NavigationContainer>
-
   );
 }
 

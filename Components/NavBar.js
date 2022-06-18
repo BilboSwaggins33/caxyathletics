@@ -12,6 +12,7 @@ import TakePicture from "../Screens/TakePicture";
 import RewardsStackScreen from "../Screens/Rewards";
 import { createStackNavigator } from "@react-navigation/stack";
 import Header from "./Header";
+import SocialStack from "../Screens/Social";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -24,7 +25,11 @@ const HomeStackNav = () => {
         headerShown: false,
       }}
     >
-      <HomeStack.Screen name="Home" component={Home} />
+      <HomeStack.Screen
+        name="Home"
+        component={Home}
+        options={{ gestureEnabled: false }}
+      />
       <HomeStack.Screen name="Gallery" component={Gallery} />
       <HomeStack.Screen name="TakePicture" component={TakePicture} />
     </HomeStack.Navigator>
@@ -65,11 +70,11 @@ export default function NavBar({ navigation }) {
       <Tab.Screen
         name="HomeStack"
         component={HomeStackNav}
-        options={{ title: "Home" }}
+        options={{ title: "Home", gestureEnabled: false }}
       />
       <Tab.Screen name="Check In" component={CheckIn} />
       <Tab.Screen name="Rewards" component={RewardsStackScreen} />
-      <Tab.Screen name="Social" component={Social} />
+      <Tab.Screen name="Social" component={SocialStack} />
     </Tab.Navigator>
   );
 }
