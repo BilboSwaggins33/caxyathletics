@@ -8,6 +8,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import Header from "./Components/Header";
 import Loading from "./Screens/Loading";
 import Login from "./Screens/Login";
+import Admin from "./Screens/Admin";
 import { firebaseConfig } from "./config";
 import { initializeApp } from "@firebase/app";
 import { getAuth, onAuthStateChanged } from "@firebase/auth";
@@ -34,6 +35,8 @@ export default function App() {
     });
   }, []);
 
+  console.log(user);
+
   return (
     <NavigationContainer>
       <Stack.Navigator>
@@ -43,16 +46,19 @@ export default function App() {
             component={Loading}
             options={{ headerShown: false }}
           />
-        ) : user ? (
-          <Stack.Screen
-            name="Main"
-            component={NavBar}
-            options={{ headerShown: false }}
-          />
-        ) : (
+        ) : !user ? (
           <Stack.Screen
             name="Login"
             component={Login}
+            options={{ headerShown: false }}
+          />
+        ) : // change dye email for mine for testing
+        user.email.includes("myke.chen@students.lfanet.org") ? (
+          <Stack.Screen name="Admin" component={Admin} options={{}} />
+        ) : (
+          <Stack.Screen
+            name="Main"
+            component={NavBar}
             options={{ headerShown: false }}
           />
         )}

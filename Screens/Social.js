@@ -19,11 +19,10 @@ import { useSelector } from "react-redux";
 import { Portal, Modal, IconButton } from "react-native-paper";
 import * as Font from "expo-font";
 import { MontserratFont } from "../assets/fonts";
-import { styleProps } from "react-native-web/dist/cjs/modules/forwardedProps";
 
 const Stack = createStackNavigator();
 
-export default function SocialStack() {
+export default function SocialStack({ navigation }) {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Group>
@@ -157,6 +156,11 @@ function LeaderboardModal({ navigation }) {
     });
     setCurrentUser(user);
   }, [currentUser]);
+
+  useEffect(() => {
+    navigation.getParent()?.setOptions({ tabBarStyle: { display: "none" } });
+    return () => navigation.getParent()?.setOptions({ tabBarStyle: undefined });
+  }, [navigation]);
 
   async function loadFont() {
     await Font.loadAsync(MontserratFont);

@@ -175,6 +175,11 @@ function RedeemModal({ navigation }) {
   const [rewardInfo, setRewardInfo] = useState(null);
   const [visible, setVisible] = useState(false);
 
+  useEffect(() => {
+    navigation.getParent()?.setOptions({ tabBarStyle: { display: "none" } });
+    return () => navigation.getParent()?.setOptions({ tabBarStyle: undefined });
+  }, [navigation]);
+
   function Separator() {
     return (
       <View

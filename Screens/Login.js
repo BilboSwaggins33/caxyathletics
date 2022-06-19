@@ -10,27 +10,26 @@ import {
 } from "firebase/auth";
 import * as WebBrowser from "expo-web-browser";
 import { Button } from "react-native-paper";
-import * as Font from 'expo-font'
-import { MontserratFont } from '../assets/fonts'
-
+import * as Font from "expo-font";
+import { MontserratFont } from "../assets/fonts";
 
 //initializeApp(firebaseConfig)
 WebBrowser.maybeCompleteAuthSession();
 //https://auth.expo.io/@anonymous/caxy-athletics-2-77c481ca-9e93-4d00-84e6-ec3ca215bc57
 export default function Login() {
   //746295234450-suacf94k1rspa2b7gmh3ut80ujacicin.apps.googleusercontent.com
-  const [fontsLoaded, setFontsLoaded] = useState(false)
+  const [fontsLoaded, setFontsLoaded] = useState(false);
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     clientId:
       "746295234450-suacf94k1rspa2b7gmh3ut80ujacicin.apps.googleusercontent.com",
   });
   async function loadFont() {
     await Font.loadAsync(MontserratFont);
-    setFontsLoaded(true)
+    setFontsLoaded(true);
   }
 
   useEffect(() => {
-    loadFont()
+    loadFont();
     if (response?.type === "success") {
       const { id_token } = response.params;
       //console.log(response.params, id_token)
@@ -39,32 +38,37 @@ export default function Login() {
 
       //const credential = provider.credential(id_token);
       signInWithCredential(auth, credential).then((result) => {
-        const db = getDatabase();
-        //console.log(result.user.uid, result.user.displayName, result.user.email, result.user.photoURL)
-        onValue(ref(db, "users/" + result.user.uid), (snapshot) => {
-          console.log('user info:', snapshot.val())
-          if (snapshot.exists()) {
-            update(ref(db, "users/" + result.user.uid), {
-              uid: result.user.uid,
-              name: result.user.displayName,
-              email: result.user.email,
-              profileUrl: result.user.photoURL,
-            });
-          } else {
-            set(ref(db, "users/" + result.user.uid), {
-              uid: result.user.uid,
-              name: result.user.displayName,
-              email: result.user.email,
-              profileUrl: result.user.photoURL,
-              points: 0,
-            })
-          }
-        });
-
+        if (
+          result.user.email.includes("@students.lfanet.org") ||
+          result.user.email.includes("@lfanet.org")
+        ) {
+          const db = getDatabase();
+          //console.log(result.user.uid, result.user.displayName, result.user.email, result.user.photoURL)
+          onValue(ref(db, "users/" + result.user.uid), (snapshot) => {
+            console.log("user info:", snapshot.val());
+            if (snapshot.exists()) {
+              update(ref(db, "users/" + result.user.uid), {
+                uid: result.user.uid,
+                name: result.user.displayName,
+                email: result.user.email,
+                profileUrl: result.user.photoURL,
+              });
+            } else {
+              set(ref(db, "users/" + result.user.uid), {
+                uid: result.user.uid,
+                name: result.user.displayName,
+                email: result.user.email,
+                profileUrl: result.user.photoURL,
+                points: 0,
+              });
+            }
+          });
+        } else {
+          console.log("fuck off");
+        }
       });
     }
   }, [response]);
-
 
   const SignInButton = () => (
     <Button
