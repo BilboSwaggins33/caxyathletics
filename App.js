@@ -25,17 +25,16 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     onAuthStateChanged(auth, (u) => {
+      //console.log(u)
       if (u) {
         dispatch(setUser(u));
       } else {
-        dispatch(setUser(undefined));
+        dispatch(setUser(null));
         //navigation.navigate("Login");
       }
       setIsLoading(false);
     });
   }, []);
-
-  console.log(user);
 
   return (
     <NavigationContainer>
@@ -53,15 +52,15 @@ export default function App() {
             options={{ headerShown: false }}
           />
         ) : // change dye email for mine for testing
-        user.email.includes("myke.chen@students.lfanet.org") ? (
-          <Stack.Screen name="Admin" component={Admin} options={{}} />
-        ) : (
-          <Stack.Screen
-            name="Main"
-            component={NavBar}
-            options={{ headerShown: false }}
-          />
-        )}
+          user.email.includes("myke.chen@students.lfanet.org") ? (
+            <Stack.Screen name="Admin" component={Admin} options={{}} />
+          ) : (
+            <Stack.Screen
+              name="Main"
+              component={NavBar}
+              options={{ headerShown: false }}
+            />
+          )}
       </Stack.Navigator>
     </NavigationContainer>
   );

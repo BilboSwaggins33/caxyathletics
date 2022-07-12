@@ -4,6 +4,7 @@ export const RESET_POINTS = "RESET_POINTS";
 export const SET_MAX_POINTS = "SET_MAX_POINTS";
 export const SET_REWARD_INFO = "SET_REWARD_INFO";
 export const SET_REWARD_REDEEM = "SET_REWARD_REDEEM";
+export const SET_LOCATION = "SET_LOCATION"
 
 export const setPoints = (points, addedPoints) => {
   return {
@@ -46,3 +47,10 @@ export const setRewardRedeem = (redeemed) => {
     payload: !redeemed,
   };
 };
+
+export const setLocation = (location) => {
+  return {
+    type: SET_LOCATION,
+    payload: location,
+  }
+}

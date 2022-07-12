@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getDatabase, ref, set, onValue, update } from "firebase/database";
+import { getDatabase, ref, set, onValue, update, get } from "firebase/database";
 import {
   StyleSheet,
   View,
@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   Modal,
   Dimensions,
-  ScrollView
+  ScrollView,
 } from "react-native";
 import Header from "../Components/Header";
 import { Button } from "react-native-paper";
@@ -21,6 +21,7 @@ export default function Gallery({ navigation }) {
   const [photos, setPhotos] = useState([]);
   const [fontsLoaded, setFontsLoaded] = useState(false)
   const [modalVisible, setModalVisible] = useState(false);
+  const [orientation, setOrientation] = useState(0)
   const [img, setIMG] = useState({});
   const db = getDatabase();
   const galleryRef = ref(db, "gallery/");
@@ -28,11 +29,13 @@ export default function Gallery({ navigation }) {
     await Font.loadAsync(MontserratFont);
     setFontsLoaded(true)
   }
+
   useEffect(() => {
-    loadFont()
+
     onValue(galleryRef, (snapshot) => {
       setPhotos(Object.values(snapshot.val()));
     });
+    loadFont()
   }, []);
 
 
@@ -53,7 +56,6 @@ export default function Gallery({ navigation }) {
       setModalVisible(true);
     });
   };
-
   if (!fontsLoaded) {
     return null;
   } else {
@@ -93,16 +95,17 @@ export default function Gallery({ navigation }) {
             onRequestClose={() => {
               setModalVisible(!modalVisible);
             }}>
-            <View style={styles.centeredView}>
+            <SafeAreaView style={styles.centeredView}>
               <View style={styles.modalView}>
-                <View>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
                     <Image source={{ uri: img.profUrl }} style={{ width: 25, height: 25, borderRadius: 25, marginRight: 10 }} />
                     <Text style={styles.modalText}>{img.user}</Text>
                   </View>
                   <Text style={[styles.modalText, styles.time]}>{img.time}</Text>
                 </View>
-                <Image source={{ uri: img.uri }} style={{ width: "100%", height: "auto", borderRadius: 10, aspectRatio: 9 / 16 }} />
+                <Image resizeMode="contain" source={{ uri: img.uri }} style={{ width: '100%', height: 'auto', aspectRatio: 9 / 16 }} />
+
                 <Button
                   style={[styles.button, styles.buttonClose]}
                   onPress={() => setModalVisible(!modalVisible)}
@@ -111,7 +114,7 @@ export default function Gallery({ navigation }) {
                   <Text style={styles.textStyle}>Close</Text>
                 </Button>
               </View>
-            </View>
+            </SafeAreaView>
           </Modal>
         </ScrollView>
       </SafeAreaView>
@@ -144,25 +147,22 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 22,
   },
   modalView: {
-    margin: 10,
     backgroundColor: "white",
-    paddingVertical: 10,
     alignItems: "center",
-
+    marginTop: 10
   },
   button: {
     borderRadius: 10,
     elevation: 2,
-    marginTop: 20,
   },
   buttonOpen: {
     backgroundColor: "#F194FF",
   },
   buttonClose: {
     backgroundColor: "#3E3939",
+    marginTop: 10
   },
   modalText: {
     textAlign: "center",

@@ -15,10 +15,11 @@ import Header from "../Components/Header";
 import { ActivityIndicator, Button } from "react-native-paper";
 import { getAuth, signOut } from "firebase/auth";
 import { getDatabase, ref, set, onValue, update } from "firebase/database";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { Portal, Modal, IconButton } from "react-native-paper";
 import * as Font from "expo-font";
 import { MontserratFont } from "../assets/fonts";
+import { setUser } from "../redux/actions";
 
 const Stack = createStackNavigator();
 
@@ -26,7 +27,7 @@ export default function SocialStack({ navigation }) {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Group>
-        <Stack.Screen name="Social" component={Social} />
+        <Stack.Screen name="SocialView" component={Social} />
       </Stack.Group>
       <Stack.Group screenOptions={{ presentation: "modal" }}>
         <Stack.Screen name="Leaderboard" component={LeaderboardModal} />
@@ -40,12 +41,11 @@ function Social({ navigation }) {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [currentUser, setCurrentUser] = useState([]);
   const { user } = useSelector((state) => state.userReducer);
-
+  const dispatch = useDispatch()
   const db = getDatabase();
   const auth = getAuth();
   const usersRef = ref(db, "users/");
   const { points } = useSelector((state) => state.userReducer);
-  console.log(points);
 
   async function loadFont() {
     await Font.loadAsync(MontserratFont);
@@ -69,7 +69,8 @@ function Social({ navigation }) {
       labelStyle={{ fontFamily: "Montserrat-SemiBold" }}
       mode="contained"
       onPress={() => {
-        signOut(auth);
+        dispatch(setUser(null))
+        signOut(auth).then(() => { console.log('sign out success') })
       }}
     >
       Sign Out

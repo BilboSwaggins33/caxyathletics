@@ -17,10 +17,11 @@ import Header from "../Components/Header";
 import { getAuth, signOut } from "firebase/auth";
 import { styleProps } from "react-native-web/dist/cjs/modules/forwardedProps";
 import AnnouncementModal from "../Components/AnnouncementModal";
-import { Provider } from "react-native-paper";
 import { getDatabase, ref, set, onValue, update } from "firebase/database";
 import * as Font from 'expo-font';
 import { MontserratFont } from "../assets/fonts";
+import LoadingScreen from './Loading'
+import { Button } from "react-native-paper";
 
 export default function Home({ navigation }) {
   const [eventClicked, setEventClicked] = useState(false);
@@ -33,12 +34,11 @@ export default function Home({ navigation }) {
     setFontsLoaded(true)
   }
   useEffect(() => {
-    loadFont()
     onValue(galleryRef, (snapshot) => {
       setPhotos(Object.values(snapshot.val()).slice(-4));
       //console.log(Object.values(snapshot.val()).slice(-4))
     });
-
+    loadFont()
   }, []);
 
   if (eventClicked) {
@@ -52,7 +52,7 @@ export default function Home({ navigation }) {
   const lfaURL = "https://www.lfacaxys.org/";
 
   if (!fontsLoaded) {
-    return null
+    return <LoadingScreen />
   } else {
     return (
       <SafeAreaView style={styles.container}>
@@ -84,12 +84,13 @@ export default function Home({ navigation }) {
                 style={styles.headerIcon}
                 source={require("../assets/icons8-photo-gallery-48.png")}
               />
+              <Button onPress={handlePress} >Hello</Button>
               <Text style={styles.headerText}>Photo Gallery</Text>
             </View>
           </View>
           <TouchableOpacity onPress={handlePress}>
             <View style={styles.photoGallery}>
-              {photos.slice(0, 4).map((item, index) => (
+              {photos.map((item, index) => (
                 <View key={index} style={styles.gridView}>
                   <Image
                     source={{ uri: item.uri }}

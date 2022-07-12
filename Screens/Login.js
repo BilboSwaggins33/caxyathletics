@@ -7,6 +7,7 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithCredential,
+  signOut,
 } from "firebase/auth";
 import * as WebBrowser from "expo-web-browser";
 import { Button } from "react-native-paper";
@@ -35,7 +36,6 @@ export default function Login() {
       //console.log(response.params, id_token)
       const auth = getAuth();
       var credential = GoogleAuthProvider.credential(id_token);
-
       //const credential = provider.credential(id_token);
       signInWithCredential(auth, credential).then((result) => {
         if (
@@ -43,9 +43,9 @@ export default function Login() {
           result.user.email.includes("@lfanet.org")
         ) {
           const db = getDatabase();
-          //console.log(result.user.uid, result.user.displayName, result.user.email, result.user.photoURL)
+          console.log('result', result.user)
           onValue(ref(db, "users/" + result.user.uid), (snapshot) => {
-            console.log("user info:", snapshot.val());
+            //console.log("user info:", snapshot.val());
             if (snapshot.exists()) {
               update(ref(db, "users/" + result.user.uid), {
                 uid: result.user.uid,
@@ -64,7 +64,8 @@ export default function Login() {
             }
           });
         } else {
-          console.log("fuck off");
+          console.log("no");
+          signOut(auth)
         }
       });
     }

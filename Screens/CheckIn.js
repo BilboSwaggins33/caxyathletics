@@ -1,18 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
-  View,
-  StyleSheet,
-  Text,
-  ScrollView,
-  Dimensions,
-  Button,
-  TouchableOpacity,
-  Pressable,
-  Image,
-  Alert,
+  View, StyleSheet, Text, ScrollView, Dimensions, Button, TouchableOpacity, Pressable, Image, Alert, AppState
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as Location from "expo-location";
 import * as Font from 'expo-font'
 import { MontserratFont } from "../assets/fonts";
 import Header from "../Components/Header";
@@ -20,107 +10,235 @@ import EventView from "../Components/EventView";
 import { Portal, ActivityIndicator, Modal } from "react-native-paper";
 import InGame from "./InGame";
 import { coords } from "../Data/coordinates";
+import * as TaskManager from 'expo-task-manager';
+import * as Location from "expo-location";
+import * as BackgroundFetch from 'expo-background-fetch';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import moment from 'moment'
+import { useSelector, useDispatch } from "react-redux";
+import {
+  setMaxPoints, setPoints, setLocation
+} from "../redux/actions";
+import { getDatabase, ref, set, onValue, update } from "firebase/database";
+import { getAuth } from "@firebase/auth";
+import * as Permissions from 'expo-permissions'
+import BackgroundGeolocation from '@mauron85/react-native-background-geolocation';
+
+var signedin_location;
+var interval;
+const TASK_NAME = 'background-fetch'
+const trackLocation = async () => {
+  let location = await Location.getCurrentPositionAsync();
+  console.log(location.coords.latitude, location.coords.longitude)
+  console.log(coords.find(x => x.name == signedin_location))
+  if (!inside([location.coords.latitude, location.coords.longitude], coords.find(x => x.name == signedin_location).borders)) {
+    console.log('not inside', signedin_location)
+    signedin_location = ""
+  }
+}
+TaskManager.defineTask(TASK_NAME, () => {
+  // fetch data here...
+  interval = setInterval(async () => {
+    trackLocation()
+  }, 5000);
+
+})
+
+function inside(point, vs) {
+  var x = point[0],
+    y = point[1];
+  var inside = false;
+  for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+    var xi = vs[i][0],
+      yi = vs[i][1];
+    var xj = vs[j][0],
+      yj = vs[j][1];
+    var intersect =
+      yi > y != yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
 
 export default function CheckIn() {
-  const [location, setLocation] = useState(null);
-  const [errorMsg, setErrorMsg] = useState(null);
-  const [position, setPosition] = useState("");
-  const [visible, setVisible] = useState(false);
-  const [inLocation, setInLocation] = useState(null);
+  const appState = useRef(AppState.currentState);
+  const dispatch = useDispatch();
+  const db = getDatabase();
+  const auth = getAuth();
+  const { points } = useSelector((state) => state.userReducer);
+  const [inLocation, setInLocation] = useState(false);
+  const [isLoading, setIsLoading] = useState(false)
   const [inGame, setInGame] = useState(false);
   const [fontsLoaded, setFontsLoaded] = useState(false)
-
+  const [elapsed, setElapsed] = useState(0)
+  var timeInt;
+  const maxPoints = 1000;
+  const user = auth.currentUser;
   async function loadFont() {
     await Font.loadAsync(MontserratFont);
     setFontsLoaded(true)
   }
-  const hideModal = () => {
-    setVisible(false);
-    setInLocation(null);
+
+  const recordStartTime = async () => {
+    try {
+      const now = moment().format("HH:mm:ss");
+      await AsyncStorage.setItem("@start_time", now);
+    } catch (err) {
+      // TODO: handle errors from setItem properly
+      console.warn(err);
+    }
   };
-  const containerStyle = { backgroundColor: "white", padding: 20 };
 
+  const getElapsedTime = async () => {
+    try {
+      const startTime = await AsyncStorage.getItem("@start_time");
+      const now = moment().format("HH:mm:ss");
+      const d = moment.utc(moment(now, "HH:mm:ss").diff(moment(startTime, "HH:mm:ss"))).format("HH:mm:ss")
+      if (signedin_location === "") {
+        console.log("NOT ANYWHERE!!!!")
+      }
+      setElapsed(d)
+      return d
+    } catch (err) {
+      // TODO: handle errors from setItem properly
+      console.warn(err);
+    }
+  };
+  const handleAppStateChange = async (nextAppState) => {
+    if (appState.current.match(/inactive|background/) &&
+      nextAppState === "active") {
+
+      // We just became active again: recalculate elapsed time based 
+      // on what we stored in AsyncStorage when we started.
+      const elapsed = await getElapsedTime();
+      // Update the elapsed seconds state
+      setElapsed(elapsed);
+    }
+    appState.current = nextAppState;
+  };
   useEffect(() => {
-    (async () => {
-      console.log(location);
+    timeInt = setInterval(() => { getElapsedTime() }, 500);
+    return () => {
+      clearInterval(timeInt);
+    };
+  }, []);
+  useEffect(() => {
 
+    const checkPermissions = async () => {
       try {
         let { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
           alert("Permission to access foreground location was denied");
-          return;
         }
-        let loc = await Location.getCurrentPositionAsync({});
-        setLocation(loc);
 
         let backPerm = await Location.requestBackgroundPermissionsAsync();
+        //console.log(status)
+
+        const subscription = AppState.addEventListener("change", handleAppStateChange);
+        return () => subscription.remove();
+
       } catch (error) {
         let status = Location.getProviderStatusAsync();
         if (!(await status).locationServicesEnabled) {
           alert("Enable Location Services");
         }
       }
-    })(loadFont());
+    }
+    checkPermissions();
+    loadFont();
   }, []);
 
-  let text = "Waiting...";
-  if (errorMsg) {
-    text = errorMsg;
-  } else if (location) {
-    text = JSON.stringify(location);
+
+  const checkStatusAsync = async () => {
+    const status = await BackgroundFetch.getStatusAsync();
+    const reg = await TaskManager.isTaskRegisteredAsync(TASK_NAME);
+    console.log('status:', status, 'task registered?', reg)
+  };
+
+  const RegisterBackgroundTask = async () => {
+    try {
+      return BackgroundFetch.registerTaskAsync(TASK_NAME)
+    } catch (err) {
+      console.log("Task Register failed:", err)
+    }
   }
 
-  // return true if user is in a registered location, false otherwise
-  function checkLocation() {
-    console.log(location);
-    // re run the check location
-    // first hide location with a text saying "loading..."
-    // then renders location
-    if (text === "Waiting...") {
-      Alert.alert("Please wait till location is fetched");
-      return;
-    }
+  const unregisterBackgroundFetchAsync = async () => {
+    return BackgroundFetch.unregisterTaskAsync(TASK_NAME);
+  }
 
+  const CheckInGame = async (x) => {
+    setInGame(x)
+    if (x) {
+      recordStartTime()
+      await RegisterBackgroundTask()
+    } else {
+      let t = await getElapsedTime()
+      let seconds = t.split(':').reverse().reduce((el, a, index) => el + (Number(a) * Math.pow(60, index)), 0)
+      console.log('seconds elapsed:', seconds)
+      changePoints(Math.round(seconds))
+      updatePoints(Math.round(seconds))
+      clearInterval(interval)
+      await unregisterBackgroundFetchAsync()
+    }
+    checkStatusAsync();
+  };
+
+  function changePoints(n) {
+    //console.log("changed points by", n);
+    let total = points + n;
+    if (total < maxPoints) {
+      //console.log(total);
+      dispatch(setPoints(points, n));
+      // eventualy change updatePoints to timer
+      //updatePoints(total);
+    } else {
+      dispatch(setMaxPoints(maxPoints));
+      // updatePoints(maxPoints);
+    }
+  }
+  async function checkLocation() {
+    setIsLoading(true)
+    let loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Highest });
+    console.log('[', loc.coords.latitude, ',', loc.coords.longitude, '],');
     for (let i = 0; i < coords.length; i++) {
-      console.log(location.coords.latitude);
-      console.log(location.coords.longitude);
       if (
         inside(
-          [location.coords.latitude, location.coords.longitude],
+          [loc.coords.latitude, loc.coords.longitude],
           coords[i].borders
         )
       ) {
-        console.log(`is inside ${coords[i].name}`);
-        setPosition(coords[i].name);
+        //console.log(`is inside ${coords[i].name}`);
+        signedin_location = coords[i].name
+        console.log('is inside', signedin_location)
         setInLocation(true);
-        return true;
-      } else {
-        console.log("is not inside any registered location");
-        setPosition("Not in any registered location");
+        setIsLoading(false)
+        return;
       }
     }
-    setInLocation(false);
-    return false;
+    // signedin_location = "room"
+    // setInLocation(true)
+    //setInLocation(false)
+    //setInGame(false)
+    setIsLoading(false)
+    return;
   }
 
-  //current point - point (format: [latitude,longitude])
-  //vs - rectangle(format array of array of [latitude,longitude])
-  //inside([latitude,longitude],[[lat1,long1],[lat2,long2],[lat3,long3],[lat4,long4]])
-  function inside(point, vs) {
-    var x = point[0],
-      y = point[1];
-    var inside = false;
-    for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
-      var xi = vs[i][0],
-        yi = vs[i][1];
-      var xj = vs[j][0],
-        yj = vs[j][1];
-      var intersect =
-        yi > y != yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
-      if (intersect) inside = !inside;
+
+
+  function updatePoints(n) {
+    let total = points + n
+    if (total < maxPoints) {
+      update(ref(db, 'users/' + user.uid), {
+        points: total,
+      }).then(() => { console.log('points saved successfully') })
+    } else {
+      update(ref(db, "users/" + user.uid), {
+        points: maxPoints,
+      });
     }
-    return inside;
   }
+
   if (!fontsLoaded) {
     return null;
   } else {
@@ -128,21 +246,6 @@ export default function CheckIn() {
       <SafeAreaView style={styles.safe}>
         <ScrollView style={styles.scroll} stickyHeaderIndices={[0]}>
           <Header />
-          <Portal>
-            <Modal
-              visible={inLocation === false}
-              onDismiss={hideModal}
-              contentContainerStyle={containerStyle}
-            >
-              <View style={styles.modalView}>
-                <Text>
-                  Sorry. You are not at one of the game locations or there is no
-                  game scheduled right now.
-                </Text>
-                <Text>{position}</Text>
-              </View>
-            </Modal>
-          </Portal>
           <View style={styles.sectionContainer}>
             <View style={styles.headerContainer}>
               <Image
@@ -153,14 +256,32 @@ export default function CheckIn() {
             </View>
           </View>
 
-          {text === "Waiting..." || inLocation !== true ? (
+          {isLoading ? (
             <View>
               <View style={styles.eventView}>
                 <ActivityIndicator
-                  animating={text === "Waiting..."}
+                  animating={isLoading}
                   color={"#F37121"}
                   size={"large"}
                 />
+              </View>
+              <TouchableOpacity onPress={() => { checkLocation() }}>
+                <View style={styles.checkInBtn}>
+                  <Image
+                    style={styles.checkInIcon}
+                    source={require("../assets/icons8-paper-plane-48.png")}
+                  />
+                  <Text style={styles.checkInText}>Get Location</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          ) : !inLocation ? (
+            <View>
+              <View style={styles.eventView}>
+                <View style={{ margin: 30 }}>
+                  <Text style={{ fontFamily: 'Montserrat-Medium', textAlign: 'center' }}>You are not at one of the game locations or there is no
+                    game currently scheduled at this location.</Text>
+                </View>
               </View>
               <TouchableOpacity onPress={checkLocation}>
                 <View style={styles.checkInBtn}>
@@ -171,11 +292,12 @@ export default function CheckIn() {
                   <Text style={styles.checkInText}>Get Location</Text>
                 </View>
               </TouchableOpacity>
+
             </View>
-          ) : (
+          ) : !inGame ? (
             <View>
               <EventView />
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => { CheckInGame(true) }}>
                 <View style={styles.checkInBtn}>
                   <Image
                     style={styles.checkInIcon}
@@ -184,10 +306,28 @@ export default function CheckIn() {
                   <Text style={styles.checkInText}>Check In</Text>
                 </View>
               </TouchableOpacity>
+              <TouchableOpacity onPress={() => setInLocation(false)}>
+                <View style={styles.checkInBtn}>
+                  <Text style={styles.checkInText}>Leave</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+
+          ) : (
+            <View>
+              <View style={styles.eventView}>
+                <Text> Checked in! Enjoy the game!</Text>
+                <Text>{elapsed}</Text>
+
+              </View>
+              <TouchableOpacity onPress={() => { CheckInGame(false) }}>
+                <View style={styles.checkInBtn}>
+                  <Text style={styles.checkInText}>Stop Timer</Text>
+                </View>
+              </TouchableOpacity>
             </View>
           )}
 
-          {/* {inGame === true ? <InGame /> : false} */}
         </ScrollView>
       </SafeAreaView>
     );
@@ -251,8 +391,9 @@ const styles = StyleSheet.create({
   checkInBtn: {
     backgroundColor: "#F37121",
     width: width - 70,
-    height: 80,
+    height: 50,
     marginLeft: 35,
+    margin: 10,
     borderRadius: 10,
     flexDirection: "row",
     alignItems: "center",
@@ -268,7 +409,12 @@ const styles = StyleSheet.create({
   checkInText: {
     color: "white",
     fontFamily: "Montserrat-Bold",
-    fontSize: 24,
+    fontSize: 20,
     paddingLeft: 5,
   },
 });
+
+
+
+
+

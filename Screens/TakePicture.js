@@ -32,10 +32,11 @@ export default function TakePicture({ navigation }) {
             quality: 1,
             base64: true,
 
-        }).then(photo => { return photo })
-        if ("base64" in result) {
+        }).then(photo => { return photo.base64 })
+        if (result) {
+            console.log(result)
             push(ref(db, 'gallery/'), {
-                uri: 'data:image/jpg;base64,' + result.base64,
+                uri: 'data:image/jpg;base64,' + result,
                 postedBy: user.uid,
                 time: moment().format('MMMM Do YYYY, h:mm a')
             }).then(() => navigation.goBack())

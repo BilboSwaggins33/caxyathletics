@@ -5,6 +5,7 @@ import {
   SET_REWARD_REDEEM,
   SET_USER,
   SET_USER_POINTS,
+  SET_LOCATION
 } from "./actions";
 
 const initialState = {
@@ -13,6 +14,7 @@ const initialState = {
   points: 0,
   rewardInfo: null,
   reedeemed: false,
+  location: false
 };
 
 function userReducer(state = initialState, action) {
@@ -29,6 +31,8 @@ function userReducer(state = initialState, action) {
       return { ...state, rewardInfo: action.payload };
     case SET_REWARD_REDEEM:
       return { ...state, reedeemed: action.payload };
+    case SET_LOCATION:
+      return { ...state, location: action.payload }
     default:
       return state;
   }

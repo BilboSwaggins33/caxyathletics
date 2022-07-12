@@ -73,14 +73,17 @@ function Rewards({ navigation }) {
     checkPointsLeft();
   }, [points]);
 
-  function updatePoints(total) {
-    onValue(ref(db, "users/" + uid), (snapshot) => {
-      if (snapshot.exists()) {
-        update(ref(db, "users/" + uid), {
-          points: total,
-        });
-      }
-    });
+  function updatePoints(n) {
+    let total = points + n
+    if (total < maxPoints) {
+      update(ref(db, 'users/' + user.uid), {
+        points: total,
+      }).then(() => { console.log('points saved successfully') })
+    } else {
+      update(ref(db, "users/" + user.uid), {
+        points: maxPoints,
+      });
+    }
   }
 
   function changePoints(n) {
