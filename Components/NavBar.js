@@ -7,13 +7,13 @@ import { Ionicons } from "@expo/vector-icons";
 import CheckIn from "../Screens/CheckIn";
 import Home from "../Screens/Home";
 import Gallery from "../Screens/Gallery";
-import Social from "../Screens/Social";
+import PhotoStack from "../Screens/TakePicture";
 import TakePicture from "../Screens/TakePicture";
 import RewardsStackScreen from "../Screens/Rewards";
 import { createStackNavigator } from "@react-navigation/stack";
 import Header from "./Header";
 import SocialStack from "../Screens/Social";
-
+import Admin from "../Screens/Admin"
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 const HomeStack = createStackNavigator();
@@ -31,7 +31,8 @@ const HomeStackNav = () => {
         options={{ gestureEnabled: false }}
       />
       <HomeStack.Screen name="Gallery" component={Gallery} />
-      <HomeStack.Screen name="TakePicture" component={TakePicture} />
+      <HomeStack.Screen name="TakePicture" component={PhotoStack} />
+      <HomeStack.Screen name="Admin" component={Admin} />
     </HomeStack.Navigator>
   );
 };

@@ -6,6 +6,8 @@ import {
   Image,
   Animated,
   FlatList,
+  SafeAreaView,
+  StatusBar
 } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -14,6 +16,7 @@ import { useSelector } from "react-redux";
 import { getDatabase, ref, set, onValue, update } from "firebase/database";
 import * as Font from 'expo-font';
 import { MontserratFont } from "../assets/fonts";
+//import { StatusBar } from "expo-status-bar";
 
 export default function Header() {
   const { points } = useSelector((state) => state.userReducer);
@@ -46,6 +49,10 @@ export default function Header() {
   } else {
     return (
       <View style={styles.headerContainer}>
+        <StatusBar
+          animated={true}
+          barStyle={'dark-content'}
+        />
         <View style={styles.leftContainer}>
           <Image
             style={styles.caxyLogo}

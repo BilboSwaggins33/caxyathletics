@@ -59,6 +59,7 @@ function Social({ navigation }) {
         Object.values(snapshot.val()).sort((a, b) => a.points < b.points)
       );
     });
+
     setCurrentUser(user);
   }, [currentUser]);
 
@@ -142,6 +143,7 @@ function LeaderboardModal({ navigation }) {
   const [users, setUsers] = useState([]);
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [currentUser, setCurrentUser] = useState([]);
+  const [rank, setRank] = useState(0)
   const { user } = useSelector((state) => state.userReducer);
   const db = getDatabase();
   const auth = getAuth();
@@ -154,7 +156,10 @@ function LeaderboardModal({ navigation }) {
       setUsers(
         Object.values(snapshot.val()).sort((a, b) => a.points < b.points)
       );
+      setRank(users.findIndex(x => x.uid == user.uid) + 1)
+
     });
+
     setCurrentUser(user);
   }, [currentUser]);
 
@@ -197,7 +202,7 @@ function LeaderboardModal({ navigation }) {
         <View style={styles.userRankContainer}>
           <View style={{ alignItems: "center" }}>
             <Text style={styles.lbUserText}>Rank</Text>
-            <Text style={styles.lbUserBoldText}>22</Text>
+            <Text style={styles.lbUserBoldText}>{rank}</Text>
           </View>
           <View style={{ alignItems: "center" }}>
             <Image

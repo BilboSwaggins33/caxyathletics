@@ -28,6 +28,7 @@ export default function App() {
       //console.log(u)
       if (u) {
         dispatch(setUser(u));
+        //console.log(user.email)
       } else {
         dispatch(setUser(null));
         //navigation.navigate("Login");
@@ -52,9 +53,7 @@ export default function App() {
             options={{ headerShown: false }}
           />
         ) : // change dye email for mine for testing
-          user.email.includes("myke.chen@students.lfanet.org") ? (
-            <Stack.Screen name="Admin" component={Admin} options={{}} />
-          ) : (
+          (
             <Stack.Screen
               name="Main"
               component={NavBar}

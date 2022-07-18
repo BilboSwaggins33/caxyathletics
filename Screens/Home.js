@@ -17,23 +17,26 @@ import Header from "../Components/Header";
 import { getAuth, signOut } from "firebase/auth";
 import { styleProps } from "react-native-web/dist/cjs/modules/forwardedProps";
 import AnnouncementModal from "../Components/AnnouncementModal";
-import { getDatabase, ref, set, onValue, update } from "firebase/database";
+import { getDatabase, set, onValue, update, ref } from "firebase/database";
 import * as Font from 'expo-font';
 import { MontserratFont } from "../assets/fonts";
 import LoadingScreen from './Loading'
 import { Button } from "react-native-paper";
+import { useSelector, useDispatch } from "react-redux";
 
 export default function Home({ navigation }) {
   const [eventClicked, setEventClicked] = useState(false);
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [photos, setPhotos] = useState([]);
   const db = getDatabase();
+  const { user } = useSelector((state) => state.userReducer);
   const galleryRef = ref(db, "gallery/");
   async function loadFont() {
     await Font.loadAsync(MontserratFont);
     setFontsLoaded(true)
   }
   useEffect(() => {
+    //getPhotos()
     onValue(galleryRef, (snapshot) => {
       setPhotos(Object.values(snapshot.val()).slice(-4));
       //console.log(Object.values(snapshot.val()).slice(-4))
@@ -58,13 +61,20 @@ export default function Home({ navigation }) {
       <SafeAreaView style={styles.container}>
         <ScrollView style={styles.scroll} stickyHeaderIndices={[0]}>
           <Header />
+          {(user.email.includes("myke.chen@students.lfanet.org") || user.email.includes("aaron.zhang@students.lfanet.org")) ? (
+            <Button onPress={() => { navigation.navigate("Admin") }} uppercase={false} style={{ backgroundColor: '#F37121' }} labelStyle={{ fontFamily: "Montserrat-Bold" }} mode="contained" >
+              Admin Page
+            </Button>
+          ) :
+            (<View></View>)
+          }
           <View style={styles.sectionContainer}>
             <View style={styles.headerContainer}>
               <Image
                 style={styles.headerIcon}
                 source={require("../assets/icons8-megaphone-48.png")}
               />
-              <Text style={styles.headerText}>Announcements</Text>
+              <Text style={styles.headerText}>Annnouncements</Text>
             </View>
             <AnnouncementModal />
           </View>
@@ -84,13 +94,12 @@ export default function Home({ navigation }) {
                 style={styles.headerIcon}
                 source={require("../assets/icons8-photo-gallery-48.png")}
               />
-              <Button onPress={handlePress} >Hello</Button>
               <Text style={styles.headerText}>Photo Gallery</Text>
             </View>
           </View>
           <TouchableOpacity onPress={handlePress}>
             <View style={styles.photoGallery}>
-              {photos.map((item, index) => (
+              {photos.slice(0, 4).map((item, index) => (
                 <View key={index} style={styles.gridView}>
                   <Image
                     source={{ uri: item.uri }}
@@ -238,3 +247,18 @@ const styles = StyleSheet.create({
     aspectRatio: 1 / 1
   }
 });
+
+/*
+<TouchableOpacity onPress={handlePress}>
+            <View style={styles.photoGallery}>
+              {photos.map((item, index) => (
+                <View key={index} style={styles.gridView}>
+                  <Image
+                    source={{ uri: item.uri }}
+                    style={styles.imageView}
+                  />
+                </View>
+              ))}
+            </View>
+          </TouchableOpacity>
+          */

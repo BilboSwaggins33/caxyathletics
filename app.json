@@ -18,11 +18,11 @@
           "fetch"
         ]
       },
-      "requireFullScreen": true
+      "requireFullScreen": true,
+      "bundleIdentifier": "com.aaronzhang.caxyathletics2"
     },
-    "android": {},
-    "plugins": [
-      "@react-native-google-signin/google-signin"
-    ]
+    "android": {
+      "package": "com.aaronzhang.caxyathletics2"
+    }
   }
 }

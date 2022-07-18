@@ -13,7 +13,7 @@ import {
   ScrollView,
 } from "react-native";
 import Header from "../Components/Header";
-import { Button } from "react-native-paper";
+import { Button, IconButton } from "react-native-paper";
 import * as Font from 'expo-font'
 import { MontserratFont } from "../assets/fonts";
 
@@ -21,7 +21,6 @@ export default function Gallery({ navigation }) {
   const [photos, setPhotos] = useState([]);
   const [fontsLoaded, setFontsLoaded] = useState(false)
   const [modalVisible, setModalVisible] = useState(false);
-  const [orientation, setOrientation] = useState(0)
   const [img, setIMG] = useState({});
   const db = getDatabase();
   const galleryRef = ref(db, "gallery/");
@@ -43,7 +42,7 @@ export default function Gallery({ navigation }) {
   const height = Dimensions.get("window").height;
   const width = Dimensions.get("window").width;
   const handlePicture = (item) => {
-    const userRef = ref(db, "users/" + item.postedBy);
+    const userRef = ref(db, "users/" + item.user);
     onValue(userRef, (snapshot) => {
       const data = snapshot.val();
       //console.log(data)
@@ -95,25 +94,21 @@ export default function Gallery({ navigation }) {
             onRequestClose={() => {
               setModalVisible(!modalVisible);
             }}>
-            <SafeAreaView style={styles.centeredView}>
-              <View style={styles.modalView}>
-                <View >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-                    <Image source={{ uri: img.profUrl }} style={{ width: 25, height: 25, borderRadius: 25, marginRight: 10 }} />
-                    <Text style={styles.modalText}>{img.user}</Text>
+            <SafeAreaView>
+              <View style={{ marginTop: 10 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <IconButton icon="arrow-left" onPress={() => setModalVisible(!modalVisible)} />
+                  <View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                      <Image source={{ uri: img.profUrl }} style={{ width: 25, height: 25, borderRadius: 25, marginRight: 10 }} />
+                      <Text style={styles.modalText}>{img.user}</Text>
+                    </View>
+                    <Text style={[styles.modalText, styles.time]}>{img.time}</Text>
                   </View>
-                  <Text style={[styles.modalText, styles.time]}>{img.time}</Text>
+                  <Text>           </Text>
                 </View>
-                <Image resizeMode="contain" source={{ uri: img.uri }} style={{ width: '100%', height: 'auto', aspectRatio: 9 / 16 }} />
-
-                <Button
-                  style={[styles.button, styles.buttonClose]}
-                  onPress={() => setModalVisible(!modalVisible)}
-                  uppercase={false}
-                >
-                  <Text style={styles.textStyle}>Close</Text>
-                </Button>
               </View>
+              <Image resizeMode="contain" source={{ uri: img.uri }} style={{ width: '100%', height: 'auto', aspectRatio: 9 / 16 }} />
             </SafeAreaView>
           </Modal>
         </ScrollView>
@@ -125,7 +120,6 @@ export default function Gallery({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#F6F4F4",
-    flex: 1
   },
   headerContainer: {
     margin: 20,
@@ -143,16 +137,7 @@ const styles = StyleSheet.create({
     maxWidth: 24,
     maxHeight: 24,
   },
-  centeredView: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalView: {
-    backgroundColor: "white",
-    alignItems: "center",
-    marginTop: 10
-  },
+
   button: {
     borderRadius: 10,
     elevation: 2,

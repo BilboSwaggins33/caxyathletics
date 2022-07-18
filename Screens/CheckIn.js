@@ -3,6 +3,7 @@ import {
   View, StyleSheet, Text, ScrollView, Dimensions, Button, TouchableOpacity, Pressable, Image, Alert, AppState
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import RNLocation from 'react-native-location';
 import * as Font from 'expo-font'
 import { MontserratFont } from "../assets/fonts";
 import Header from "../Components/Header";
@@ -10,40 +11,15 @@ import EventView from "../Components/EventView";
 import { Portal, ActivityIndicator, Modal } from "react-native-paper";
 import InGame from "./InGame";
 import { coords } from "../Data/coordinates";
-import * as TaskManager from 'expo-task-manager';
-import * as Location from "expo-location";
-import * as BackgroundFetch from 'expo-background-fetch';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from 'moment'
 import { useSelector, useDispatch } from "react-redux";
+
 import {
   setMaxPoints, setPoints, setLocation
 } from "../redux/actions";
 import { getDatabase, ref, set, onValue, update } from "firebase/database";
 import { getAuth } from "@firebase/auth";
-import * as Permissions from 'expo-permissions'
-import BackgroundGeolocation from '@mauron85/react-native-background-geolocation';
-
-var signedin_location;
-var interval;
-const TASK_NAME = 'background-fetch'
-const trackLocation = async () => {
-  let location = await Location.getCurrentPositionAsync();
-  console.log(location.coords.latitude, location.coords.longitude)
-  console.log(coords.find(x => x.name == signedin_location))
-  if (!inside([location.coords.latitude, location.coords.longitude], coords.find(x => x.name == signedin_location).borders)) {
-    console.log('not inside', signedin_location)
-    signedin_location = ""
-  }
-}
-TaskManager.defineTask(TASK_NAME, () => {
-  // fetch data here...
-  interval = setInterval(async () => {
-    trackLocation()
-  }, 5000);
-
-})
-
 function inside(point, vs) {
   var x = point[0],
     y = point[1];
@@ -71,13 +47,28 @@ export default function CheckIn() {
   const [inGame, setInGame] = useState(false);
   const [fontsLoaded, setFontsLoaded] = useState(false)
   const [elapsed, setElapsed] = useState(0)
-  var timeInt;
+  const [location, setLocation] = useState(null)
+  const [tempCoords, setTempCoords] = useState([])
   const maxPoints = 1000;
   const user = auth.currentUser;
   async function loadFont() {
     await Font.loadAsync(MontserratFont);
     setFontsLoaded(true)
   }
+
+  RNLocation.configure({
+    distanceFilter: 5.0,
+    desiredAccuracy: {
+      ios: "bestForNavigation",
+      android: "balancedPowerAccuracy"
+    },
+    activityType: "other",
+    allowsBackgroundLocationUpdates: true,
+    headingFilter: 1, // Degrees
+    headingOrientation: "portrait",
+    pausesLocationUpdatesAutomatically: false,
+    showsBackgroundLocationIndicator: true,
+  })
 
   const recordStartTime = async () => {
     try {
@@ -94,9 +85,6 @@ export default function CheckIn() {
       const startTime = await AsyncStorage.getItem("@start_time");
       const now = moment().format("HH:mm:ss");
       const d = moment.utc(moment(now, "HH:mm:ss").diff(moment(startTime, "HH:mm:ss"))).format("HH:mm:ss")
-      if (signedin_location === "") {
-        console.log("NOT ANYWHERE!!!!")
-      }
       setElapsed(d)
       return d
     } catch (err) {
@@ -104,84 +92,70 @@ export default function CheckIn() {
       console.warn(err);
     }
   };
-  const handleAppStateChange = async (nextAppState) => {
-    if (appState.current.match(/inactive|background/) &&
-      nextAppState === "active") {
 
-      // We just became active again: recalculate elapsed time based 
-      // on what we stored in AsyncStorage when we started.
-      const elapsed = await getElapsedTime();
-      // Update the elapsed seconds state
-      setElapsed(elapsed);
-    }
-    appState.current = nextAppState;
-  };
+
+  useEffect(() => {
+    RNLocation.requestPermission({
+      ios: "always",
+      android: {
+        detail: "coarse"
+      }
+    }).then(granted => {
+      if (!granted) {
+        alert("Permission to always access location in background was denied.")
+        return
+      }
+    })
+
+    loadFont();
+  }, []);
+
+
   useEffect(() => {
     timeInt = setInterval(() => { getElapsedTime() }, 500);
     return () => {
       clearInterval(timeInt);
     };
   }, []);
-  useEffect(() => {
 
-    const checkPermissions = async () => {
-      try {
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") {
-          alert("Permission to access foreground location was denied");
+  _startUpdatingLocation = () => {
+    let counter = 0;
+    locationSubscription = RNLocation.subscribeToLocationUpdates(
+      locations => {
+        //console.log(locations[0].latitude, locations[0].longitude)
+        counter++;
+        console.log(counter)
+        if (counter == 10) {
+          //setTempCoords([101, 0])
+          CheckInGame(false)
+          _stopUpdatingLocation()
         }
-
-        let backPerm = await Location.requestBackgroundPermissionsAsync();
-        //console.log(status)
-
-        const subscription = AppState.addEventListener("change", handleAppStateChange);
-        return () => subscription.remove();
-
-      } catch (error) {
-        let status = Location.getProviderStatusAsync();
-        if (!(await status).locationServicesEnabled) {
-          alert("Enable Location Services");
+        if (!inside(tempCoords, coords[location].borders)) {
+          CheckInGame(false)
+          _stopUpdatingLocation()
         }
       }
-    }
-    checkPermissions();
-    loadFont();
-  }, []);
-
-
-  const checkStatusAsync = async () => {
-    const status = await BackgroundFetch.getStatusAsync();
-    const reg = await TaskManager.isTaskRegisteredAsync(TASK_NAME);
-    console.log('status:', status, 'task registered?', reg)
+    );
   };
 
-  const RegisterBackgroundTask = async () => {
-    try {
-      return BackgroundFetch.registerTaskAsync(TASK_NAME)
-    } catch (err) {
-      console.log("Task Register failed:", err)
-    }
-  }
+  _stopUpdatingLocation = () => {
+    locationSubscription && this.locationSubscription();
+    //setLocation(null);
+  };
 
-  const unregisterBackgroundFetchAsync = async () => {
-    return BackgroundFetch.unregisterTaskAsync(TASK_NAME);
-  }
+
 
   const CheckInGame = async (x) => {
     setInGame(x)
     if (x) {
       recordStartTime()
-      await RegisterBackgroundTask()
     } else {
       let t = await getElapsedTime()
       let seconds = t.split(':').reverse().reduce((el, a, index) => el + (Number(a) * Math.pow(60, index)), 0)
       console.log('seconds elapsed:', seconds)
       changePoints(Math.round(seconds))
       updatePoints(Math.round(seconds))
-      clearInterval(interval)
-      await unregisterBackgroundFetchAsync()
     }
-    checkStatusAsync();
   };
 
   function changePoints(n) {
@@ -190,40 +164,38 @@ export default function CheckIn() {
     if (total < maxPoints) {
       //console.log(total);
       dispatch(setPoints(points, n));
-      // eventualy change updatePoints to timer
-      //updatePoints(total);
     } else {
       dispatch(setMaxPoints(maxPoints));
-      // updatePoints(maxPoints);
     }
   }
   async function checkLocation() {
     setIsLoading(true)
-    let loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Highest });
-    console.log('[', loc.coords.latitude, ',', loc.coords.longitude, '],');
+    setTempCoords([50, 50])
+    // let currentCoords = RNLocation.getLatestLocation({ timeout: 60000 }).then(latestLocation => {
+    //   return [latestLocation.latitude, latestLocation.longitude]
+    // })
+    let currentCoords = [50, 50]
+
     for (let i = 0; i < coords.length; i++) {
       if (
         inside(
-          [loc.coords.latitude, loc.coords.longitude],
+          currentCoords,
           coords[i].borders
         )
       ) {
         //console.log(`is inside ${coords[i].name}`);
-        signedin_location = coords[i].name
-        console.log('is inside', signedin_location)
         setInLocation(true);
+        setLocation(i)
         setIsLoading(false)
         return;
       }
     }
-    // signedin_location = "room"
-    // setInLocation(true)
+    //setInLocation(true)
     //setInLocation(false)
     //setInGame(false)
     setIsLoading(false)
     return;
   }
-
 
 
   function updatePoints(n) {
@@ -265,7 +237,7 @@ export default function CheckIn() {
                   size={"large"}
                 />
               </View>
-              <TouchableOpacity onPress={() => { checkLocation() }}>
+              <TouchableOpacity onPress={checkLocation}>
                 <View style={styles.checkInBtn}>
                   <Image
                     style={styles.checkInIcon}
@@ -279,8 +251,7 @@ export default function CheckIn() {
             <View>
               <View style={styles.eventView}>
                 <View style={{ margin: 30 }}>
-                  <Text style={{ fontFamily: 'Montserrat-Medium', textAlign: 'center' }}>You are not at one of the game locations or there is no
-                    game currently scheduled at this location.</Text>
+                  <Text style={{ fontFamily: 'Montserrat-Medium', textAlign: 'center' }}></Text>
                 </View>
               </View>
               <TouchableOpacity onPress={checkLocation}>
@@ -297,7 +268,7 @@ export default function CheckIn() {
           ) : !inGame ? (
             <View>
               <EventView />
-              <TouchableOpacity onPress={() => { CheckInGame(true) }}>
+              <TouchableOpacity onPress={() => { CheckInGame(true); _startUpdatingLocation() }}>
                 <View style={styles.checkInBtn}>
                   <Image
                     style={styles.checkInIcon}
@@ -320,7 +291,7 @@ export default function CheckIn() {
                 <Text>{elapsed}</Text>
 
               </View>
-              <TouchableOpacity onPress={() => { CheckInGame(false) }}>
+              <TouchableOpacity onPress={() => { CheckInGame(false); _stopUpdatingLocation() }}>
                 <View style={styles.checkInBtn}>
                   <Text style={styles.checkInText}>Stop Timer</Text>
                 </View>

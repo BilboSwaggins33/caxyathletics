@@ -22,7 +22,8 @@ export default function Login() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     clientId:
-      "746295234450-suacf94k1rspa2b7gmh3ut80ujacicin.apps.googleusercontent.com",
+      "746295234450-mt1f10h1roj8varhjrueu5fj372ebn2j.apps.googleusercontent.com",
+
   });
   async function loadFont() {
     await Font.loadAsync(MontserratFont);
