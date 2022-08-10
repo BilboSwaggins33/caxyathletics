@@ -102,6 +102,7 @@ export default function AnnouncementModal() {
             data={events}
             renderItem={renderItem}
             sliderWidth={500}
+            loop={true}
             itemWidth={500}
             layout={"default"}
             onSnapToItem={(index) => setActiveIndex(index)}

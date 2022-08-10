@@ -1,5 +1,17 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { View, StyleSheet, Text, ScrollView, Dimensions, Button, TouchableOpacity, Image, LogBox } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Text,
+  ScrollView,
+  Dimensions,
+  Button,
+  TouchableOpacity,
+  Image,
+  LogBox,
+  Alert,
+  Animated,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import RNLocation from "react-native-location";
 import * as Font from "expo-font";
@@ -17,7 +29,7 @@ import { getDatabase, ref, set, onValue, update } from "firebase/database";
 import { getAuth } from "firebase/auth";
 import BackgroundTimer from "react-native-background-timer";
 import Carousel, { Pagination } from "react-native-snap-carousel";
-import { useIsFocused } from "@react-navigation/native";
+import BackgroundGeolocation, { Location, Subscription } from "react-native-background-geolocation";
 function inside(point, vs) {
   var x = point[0],
     y = point[1];
@@ -40,26 +52,107 @@ export default function CheckIn() {
   const db = getDatabase();
   const auth = getAuth();
   const { points } = useSelector((state) => state.userReducer);
-  const [inLocation, setInLocation] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [inGame, setInGame] = useState(false);
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [elapsed, setElapsed] = useState(0);
-  const [location, setLocation] = useState(null);
   const [tempCoords, setTempCoords] = useState([]);
   const [events, setEvents] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [event, setEvent] = useState({});
+  const [enabled, setEnabled] = React.useState(false);
+  const [location, setLocation] = React.useState("");
   const r = useRef(null);
   const maxPoints = 1000;
   const user = auth.currentUser;
-  const isFocused = useIsFocused();
-
   async function loadFont() {
     await Font.loadAsync(MontserratFont);
     setFontsLoaded(true);
   }
 
+  useEffect(() => {
+    loadFont();
+  }, []);
+  useEffect(() => {
+    onValue(ref(db, "events/" + new Date().toISOString().slice(0, 10)), (snapshot) => {
+      if (snapshot.exists()) {
+        setEvents(snapshot.val());
+      } else {
+        setEvents([
+          {
+            title: "No Events for Today",
+            time: "Have a nice day!",
+            location: "Lake Forest Academy",
+            facility: "Crown",
+          },
+        ]);
+      }
+    });
+  }, []);
+  React.useEffect(() => {
+    /// 1.  Subscribe to events.
+    const onLocation = BackgroundGeolocation.onLocation((location) => {
+      console.log("[onLocation]", location);
+      setLocation(JSON.stringify(location, null, 2));
+    });
+
+    const onMotionChange = BackgroundGeolocation.onMotionChange((event) => {
+      console.log("[onMotionChange]", event);
+    });
+
+    const onActivityChange = BackgroundGeolocation.onActivityChange((event) => {
+      console.log("[onMotionChange]", event);
+    });
+
+    const onProviderChange = BackgroundGeolocation.onProviderChange((event) => {
+      console.log("[onProviderChange]", event);
+    });
+
+    /// 2. ready the plugin.
+    BackgroundGeolocation.ready({
+      locationAuthorizationRequest: "Always",
+      desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_NAVIGATION,
+      distanceFilter: 1,
+      preventSuspend: true,
+      debug: true,
+      logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
+      stopOnTerminate: false,
+      startOnBoot: true,
+      showsBackgroundLocationIndicator: true,
+      stationaryRadius: 1,
+    }).then((state) => {
+      setEnabled(state.enabled);
+      console.log("- BackgroundGeolocation is configured and ready: ", state.enabled);
+    });
+
+    return () => {
+      // Remove BackgroundGeolocation event-subscribers when the View is removed or refreshed
+      // during development live-reload.  Without this, event-listeners will accumulate with
+      // each refresh during live-reload.
+      onLocation.remove();
+      onMotionChange.remove();
+      onActivityChange.remove();
+      onProviderChange.remove();
+    };
+  }, []);
+
+  const startValue = useRef(new Animated.Value(1)).current;
+  const transition = (start, end) => {
+    startValue.setValue(start);
+    Animated.spring(startValue, {
+      toValue: end,
+      friction: 3,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  React.useEffect(() => {
+    if (enabled) {
+      BackgroundGeolocation.start();
+    } else {
+      BackgroundGeolocation.stop();
+      setLocation("");
+    }
+  }, [enabled]);
   RNLocation.configure({
     distanceFilter: 5.0,
     desiredAccuracy: {
@@ -101,70 +194,29 @@ export default function CheckIn() {
     }
   };
 
-  useEffect(() => {
-    console.log("return");
-    if (isFocused) {
-      setActiveIndex(0);
-    }
-    RNLocation.requestPermission({
-      ios: "always",
-      android: {
-        detail: "coarse",
-      },
-    }).then((granted) => {
-      if (!granted) {
-        alert("Permission to always access location in background was denied.");
-        return;
-      }
-    });
-    loadFont();
-  }, [isFocused]);
-  useEffect(() => {
-    onValue(ref(db, "events/" + new Date().toISOString().slice(0, 10)), (snapshot) => {
-      if (snapshot.exists()) {
-        setEvents(snapshot.val());
-      } else {
-        setEvents([
-          {
-            title: "No Events for Today",
-            time: "Have a nice day!",
-            location: "Lake Forest Academy",
-            facility: "Why not visit Crown?",
-          },
-        ]);
-      }
-    });
-  }, []);
-
   _startUpdatingLocation = () => {
-    let counter = 0;
-    locationSubscription = RNLocation.subscribeToLocationUpdates((locations) => {
-      //console.log(locations[0].latitude, locations[0].longitude)
-      counter++;
-      console.log(counter);
-      if (counter == 10) {
-        //setTempCoords([101, 0])
-        CheckInGame(false);
-        _stopUpdatingLocation();
-      }
-      if (!inside(tempCoords, coords[location].borders)) {
-        CheckInGame(false);
-        _stopUpdatingLocation();
-      }
-    });
+    setEnabled(true);
+    //locationSubscription = RNLocation.subscribeToLocationUpdates((locations) => {});
   };
 
   _stopUpdatingLocation = () => {
-    locationSubscription && this.locationSubscription();
+    //locationSubscription && this.locationSubscription();
     BackgroundTimer.stopBackgroundTimer(); //after this call all code on background stop run.
-
+    setActiveIndex(0);
+    setEnabled(false);
     //setLocation(null);
   };
 
   const CheckInGame = async (x) => {
-    setInGame(x);
-    if (x) {
+    if (events[0].title == "No Events for Today") {
+      Alert.alert("Sorry, no events have been scheduled for today");
+      _stopUpdatingLocation();
+      setInGame(false);
+    } else if (x) {
+      setInGame(x);
+      _startUpdatingLocation();
       recordStartTime();
+      transition(0.8, 1);
     } else {
       let t = await getElapsedTime();
       let seconds = t
@@ -172,8 +224,14 @@ export default function CheckIn() {
         .reverse()
         .reduce((el, a, index) => el + Number(a) * Math.pow(60, index), 0);
       console.log("seconds elapsed:", seconds);
-      changePoints(Math.round(seconds));
-      updatePoints(Math.round(seconds));
+      var points = Math.round(seconds / 60);
+      changePoints(points);
+      updatePoints(points);
+      transition(1.2, 1);
+
+      points == 1 ? Alert.alert("You earned " + points + " point!") : Alert.alert("You earned " + points + " points!");
+      setInGame(x);
+      _stopUpdatingLocation();
     }
   };
 
@@ -187,10 +245,9 @@ export default function CheckIn() {
       dispatch(setMaxPoints(maxPoints));
     }
   }
-  async function checkLocation(x) {
+  async function checkLocation() {
     setIsLoading(true);
     setTempCoords([50, 50]);
-    setEvent(x);
     // let currentCoords = RNLocation.getLatestLocation({ timeout: 60000 }).then(latestLocation => {
     //   return [latestLocation.latitude, latestLocation.longitude]
     // })
@@ -199,16 +256,14 @@ export default function CheckIn() {
     for (let i = 0; i < coords.length; i++) {
       if (inside(currentCoords, coords[i].borders)) {
         //console.log(`is inside ${coords[i].name}`);
-        setInLocation(true);
-        setLocation(i);
+        CheckInGame(true);
         setIsLoading(false);
         return;
       }
     }
-    //setInLocation(true)
-    //setInLocation(false)
-    //setInGame(false)
+    setInGame(false);
     setIsLoading(false);
+    Alert.alert("You are not in a registered location.");
     return;
   }
 
@@ -250,17 +305,29 @@ export default function CheckIn() {
                 <ActivityIndicator animating={isLoading} color={"#F37121"} size={"large"} />
               </View>
             </View>
-          ) : !inLocation ? (
-            <View>
-              <View>
+          ) : !inGame ? (
+            <View style={{ marginTop: -20 }}>
+              <Animated.View
+                style={{
+                  transform: [{ scale: startValue }],
+                }}
+              >
                 <Carousel
                   ref={r}
                   data={events}
                   renderItem={renderItem}
+                  contentContainerCustomStyle={{ marginVertical: 40 }}
                   sliderWidth={500}
                   itemWidth={500}
                   layout={"default"}
-                  onSnapToItem={(index) => setActiveIndex(index)}
+                  loop={true}
+                  onSnapToItem={(index) => {
+                    if (events.length == 1) {
+                      setActiveIndex(0);
+                    } else {
+                      setActiveIndex(index);
+                    }
+                  }}
                 />
                 <Pagination
                   animatedDuration={100}
@@ -277,57 +344,59 @@ export default function CheckIn() {
                   inactiveDotOpacity={0.4}
                   inactiveDotScale={1}
                 />
-              </View>
+              </Animated.View>
               <TouchableOpacity
                 onPress={() => {
-                  checkLocation(events[activeIndex]);
+                  checkLocation();
                 }}
               >
                 <View style={styles.checkInBtn}>
-                  <Image style={styles.checkInIcon} source={require("../assets/icons8-paper-plane-48.png")} />
                   <Text style={styles.checkInText}>Check In</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          ) : !inGame ? (
-            <View>
-              <EventView title={event.title} location={event.location} facility={event.facility} time={event.time} />
-              <TouchableOpacity
-                onPress={() => {
-                  CheckInGame(true);
-                  _startUpdatingLocation();
-                }}
-              >
-                <View style={styles.checkInBtn}>
-                  <Image style={styles.checkInIcon} source={require("../assets/icons8-paper-plane-48.png")} />
-                  <Text style={styles.checkInText}>Start</Text>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setInLocation(false);
-                  setInGame(false);
-                }}
-              >
-                <View style={styles.checkInBtn}>
-                  <Text style={styles.checkInText}>Leave</Text>
                 </View>
               </TouchableOpacity>
             </View>
           ) : (
             <View>
-              <View style={styles.eventView}>
-                <Text> Checked in! Enjoy the game!</Text>
-                <Text>{elapsed}</Text>
+              <View>
+                <Text
+                  style={{ fontFamily: "Montserrat-Bold", fontSize: 20, color: "#F37121", alignSelf: "center", marginBottom: 20 }}
+                >
+                  You are checked in! Enjoy!
+                </Text>
+                <Animated.View
+                  style={{
+                    transform: [{ scale: startValue }],
+                  }}
+                >
+                  <EventView
+                    title={events[activeIndex].title}
+                    location={events[activeIndex].location}
+                    facility={events[activeIndex].facility}
+                    time={events[activeIndex].time}
+                  />
+                </Animated.View>
+                <View
+                  style={{
+                    justifyContent: "center",
+                    alignItems: "center",
+                    margin: 10,
+                    padding: 10,
+                    borderRadius: 10,
+                    marginHorizontal: 50,
+                    borderWidth: 0.5,
+                    borderColor: "#F37121",
+                  }}
+                >
+                  <Text style={{ fontFamily: "Montserrat-Bold", fontSize: 30, color: "#F37121" }}>{elapsed}</Text>
+                </View>
               </View>
               <TouchableOpacity
                 onPress={() => {
                   CheckInGame(false);
-                  _stopUpdatingLocation();
                 }}
               >
                 <View style={styles.checkInBtn}>
-                  <Text style={styles.checkInText}>Stop Timer</Text>
+                  <Text style={styles.checkInText}>Stop</Text>
                 </View>
               </TouchableOpacity>
             </View>
@@ -354,7 +423,7 @@ const styles = StyleSheet.create({
   },
 
   sectionContainer: {
-    marginBottom: 10,
+    marginBottom: 5,
   },
 
   headerContainer: {
@@ -394,10 +463,10 @@ const styles = StyleSheet.create({
 
   checkInBtn: {
     backgroundColor: "#F37121",
-    width: width - 70,
+    width: width - 100,
     height: 50,
-    marginLeft: 35,
-    margin: 10,
+    marginLeft: 50,
+    margin: 20,
     borderRadius: 10,
     flexDirection: "row",
     alignItems: "center",

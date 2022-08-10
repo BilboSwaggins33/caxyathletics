@@ -52,22 +52,20 @@ function EventCalendar({ navigation, route }) {
   }
 
   useEffect(() => {
-    let mounted = true;
-    if (mounted) {
-      getEvents(day);
-    }
+    getEvents(day);
+
     loadFont();
     return () => {
-      mounted = false;
+      setEvents({});
     };
   }, []);
 
-  async function getEvents(day) {
+  function getEvents(day) {
     onValue(ref(db, "events/" + day.dateString), (snapshot) => {
       if (snapshot.exists()) {
         setEvents(snapshot.val());
       } else {
-        setEvents([{ title: "", time: "", location: "No events for today" }]);
+        setEvents([{ title: "", time: "", location: "No events for today", facility: "" }]);
       }
     });
   }

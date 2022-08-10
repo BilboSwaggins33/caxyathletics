@@ -25,7 +25,7 @@ export default function EventView(props) {
           <Image style={styles.teamIcon} source={require("../assets/LFA_interlocking_logo_F2.png")} />
         </View>
         <View style={styles.infoContainer}>
-          <Image style={styles.infoIcon} source={require("../assets/icons8-head-to-head-48.png")} />
+          <Image style={styles.infoIcon} source={require("../assets/icons8-location-48.png")} />
           <Text style={styles.infoText}>{props.location}</Text>
         </View>
         <View style={styles.infoContainer}>
@@ -46,7 +46,7 @@ const width = Dimensions.get("window").width;
 const styles = StyleSheet.create({
   eventView: {
     width: width - 50,
-    height: 400,
+    height: 350,
     backgroundColor: "white",
     borderRadius: 20,
     marginLeft: 25,
@@ -54,14 +54,15 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.7,
     shadowRadius: 20,
-    marginBottom: 20,
+    marginBottom: 10,
+    padding: 15,
   },
 
   vsContainer: {
     flexDirection: "row",
     alignItems: "center",
     marginHorizontal: 40,
-    marginVertical: 40,
+    marginVertical: 20,
     justifyContent: "space-evenly",
   },
 
@@ -69,7 +70,6 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat-Bold",
     fontSize: 20,
     textAlign: "center",
-    marginTop: 20,
   },
 
   specialEvent: {

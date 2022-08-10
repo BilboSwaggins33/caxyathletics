@@ -37,8 +37,8 @@ function Social({ navigation }) {
   const db = getDatabase();
   const auth = getAuth();
   const usersRef = ref(db, "users/");
-  const { points } = useSelector((state) => state.userReducer);
-
+  const { points, redeemedInfo } = useSelector((state) => state.userReducer);
+  console.log(redeemedInfo);
   async function loadFont() {
     await Font.loadAsync(MontserratFont);
     setFontsLoaded(true);
@@ -56,7 +56,7 @@ function Social({ navigation }) {
   const SignOutButton = () => (
     <Button
       uppercase={false}
-      style={{ backgroundColor: "#F37121", marginVertical: 50 }}
+      style={{ backgroundColor: "#F37121", marginVertical: 20 }}
       labelStyle={{ fontFamily: "Montserrat-SemiBold" }}
       mode="contained"
       onPress={() => {
@@ -86,13 +86,16 @@ function Social({ navigation }) {
             style={{
               width: 100,
               height: 100,
-              marginVertical: 20,
               borderRadius: 100,
             }}
             source={{ uri: currentUser.photoURL }}
           />
-          <Text style={{ fontFamily: "Montserrat-Bold", fontSize: 20 }}>{currentUser.displayName}</Text>
-          <Text style={{ fontFamily: "Montserrat-Bold", fontSize: 20 }}>{points}</Text>
+          <Text style={{ fontFamily: "Montserrat-Bold", fontSize: 20, marginVertical: 20 }}>{currentUser.displayName}</Text>
+          <Text style={{ fontFamily: "Montserrat-Medium", fontSize: 20, marginTop: 15 }}>{points} Points</Text>
+          <Text style={{ fontFamily: "Montserrat-Medium", fontSize: 20, marginTop: 5 }}>
+            {redeemedInfo.filter(Boolean).length} Rewards Redeemed
+          </Text>
+
           <SignOutButton />
         </View>
         <View style={styles.headerContainer}>
@@ -507,6 +510,7 @@ const styles = StyleSheet.create({
     marginLeft: 25,
     display: "flex",
     alignItems: "center",
+    justifyContent: "center",
   },
 
   leaderboardContainer: {

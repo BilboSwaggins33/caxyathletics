@@ -55,7 +55,7 @@ export default function NavBar({ navigation }) {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
-          if (route.name === "HomeStack") {
+          if (route.name === "Home") {
             iconName = focused ? "ios-home" : "ios-home-outline";
           } else if (route.name === "Check In") {
             iconName = focused ? "ios-location" : "ios-location-outline";
@@ -78,7 +78,7 @@ export default function NavBar({ navigation }) {
         },
       })}
     >
-      <Tab.Screen name="HomeStack" component={HomeStackNav} />
+      <Tab.Screen name="Home" component={HomeStackNav} />
       <Tab.Screen name="Check In" component={CheckIn} />
       <Tab.Screen name="Rewards" component={RewardsStackScreen} />
       <Tab.Screen name="Social" component={SocialStack} />
