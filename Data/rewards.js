@@ -1,7 +1,7 @@
 export const rewardsList = [
   {
     id: 1,
-    name: "reward1",
+    name: "Reward 1",
     points: 100,
     redeemed: true,
     description: "item description",
@@ -9,7 +9,7 @@ export const rewardsList = [
   },
   {
     id: 2,
-    name: "reward2",
+    name: "Reward 2",
     points: 200,
     redeemed: false,
     description: "item description",
@@ -17,7 +17,7 @@ export const rewardsList = [
   },
   {
     id: 3,
-    name: "reward3",
+    name: "Reward 3",
     points: 300,
     redeemed: false,
     description: "item description",
@@ -25,7 +25,7 @@ export const rewardsList = [
   },
   {
     id: 4,
-    name: "reward4",
+    name: "Reward 4",
     points: 400,
     redeemed: false,
     description: "item description",
@@ -33,7 +33,7 @@ export const rewardsList = [
   },
   {
     id: 5,
-    name: "reward5",
+    name: "Reward 5",
     points: 500,
     redeemed: false,
     description: "item description",
@@ -41,7 +41,7 @@ export const rewardsList = [
   },
   {
     id: 6,
-    name: "reward6",
+    name: "Reward 6",
     points: 600,
     redeemed: false,
     description: "item description",
@@ -49,15 +49,15 @@ export const rewardsList = [
   },
   {
     id: 7,
-    name: "reward7",
+    name: "Reward 7",
     points: 700,
     redeemed: false,
-    description: "item description asdoiasdasdasdoasiodioasdioasiod asdas as",
+    description: "item description asdoiasda sdasdoa siodi asdio asiod asdas as",
     image: require("../assets/44979_127698_5440_XH242CN_M_-481827436__v9.png"),
   },
   {
     id: 8,
-    name: "reward8",
+    name: "Reward 8",
     points: 800,
     redeemed: false,
     description: "item description",
@@ -65,7 +65,7 @@ export const rewardsList = [
   },
   {
     id: 9,
-    name: "reward9",
+    name: "Reward 9",
     points: 900,
     redeemed: false,
     description: "item description",
@@ -73,7 +73,7 @@ export const rewardsList = [
   },
   {
     id: 10,
-    name: "reward10",
+    name: "Reward 10",
     points: 1000,
     redeemed: false,
     description: "item description",

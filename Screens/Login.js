@@ -1,18 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { getDatabase, ref, set, onValue, update } from "firebase/database";
 import { StyleSheet, View, Text } from "react-native";
-import { initializeApp } from "@firebase/app";
 import * as Google from "expo-auth-session/providers/google";
-import {
-  getAuth,
-  GoogleAuthProvider,
-  signInWithCredential,
-  signOut,
-} from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithCredential, signOut } from "firebase/auth";
 import * as WebBrowser from "expo-web-browser";
 import { Button } from "react-native-paper";
 import * as Font from "expo-font";
 import { MontserratFont } from "../assets/fonts";
+import { rewardsList } from "../Data/rewards";
 
 //initializeApp(firebaseConfig)
 WebBrowser.maybeCompleteAuthSession();
@@ -21,9 +16,7 @@ export default function Login() {
   //746295234450-suacf94k1rspa2b7gmh3ut80ujacicin.apps.googleusercontent.com
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    clientId:
-      "746295234450-mt1f10h1roj8varhjrueu5fj372ebn2j.apps.googleusercontent.com",
-
+    clientId: "746295234450-mt1f10h1roj8varhjrueu5fj372ebn2j.apps.googleusercontent.com",
   });
   async function loadFont() {
     await Font.loadAsync(MontserratFont);
@@ -39,12 +32,9 @@ export default function Login() {
       var credential = GoogleAuthProvider.credential(id_token);
       //const credential = provider.credential(id_token);
       signInWithCredential(auth, credential).then((result) => {
-        if (
-          result.user.email.includes("@students.lfanet.org") ||
-          result.user.email.includes("@lfanet.org")
-        ) {
+        if (result.user.email.includes("@students.lfanet.org") || result.user.email.includes("@lfanet.org")) {
           const db = getDatabase();
-          console.log('result', result.user)
+          console.log("result", result.user);
           onValue(ref(db, "users/" + result.user.uid), (snapshot) => {
             //console.log("user info:", snapshot.val());
             if (snapshot.exists()) {
@@ -61,12 +51,13 @@ export default function Login() {
                 email: result.user.email,
                 profileUrl: result.user.photoURL,
                 points: 0,
+                redeemedPrizes: Array(rewardsList.length).fill(false),
               });
             }
           });
         } else {
           console.log("no");
-          signOut(auth)
+          signOut(auth);
         }
       });
     }

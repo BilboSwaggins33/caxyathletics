@@ -15,12 +15,11 @@ import {
 } from "react-native";
 import Header from "../Components/Header";
 import { getAuth, signOut } from "firebase/auth";
-import { styleProps } from "react-native-web/dist/cjs/modules/forwardedProps";
 import AnnouncementModal from "../Components/AnnouncementModal";
 import { getDatabase, set, onValue, update, ref } from "firebase/database";
-import * as Font from 'expo-font';
+import * as Font from "expo-font";
 import { MontserratFont } from "../assets/fonts";
-import LoadingScreen from './Loading'
+import LoadingScreen from "./Loading";
 import { Button } from "react-native-paper";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -33,7 +32,7 @@ export default function Home({ navigation }) {
   const galleryRef = ref(db, "gallery/");
   async function loadFont() {
     await Font.loadAsync(MontserratFont);
-    setFontsLoaded(true)
+    setFontsLoaded(true);
   }
   useEffect(() => {
     //getPhotos()
@@ -41,7 +40,7 @@ export default function Home({ navigation }) {
       setPhotos(Object.values(snapshot.val()).slice(-4));
       //console.log(Object.values(snapshot.val()).slice(-4))
     });
-    loadFont()
+    loadFont();
   }, []);
 
   if (eventClicked) {
@@ -55,45 +54,46 @@ export default function Home({ navigation }) {
   const lfaURL = "https://www.lfacaxys.org/";
 
   if (!fontsLoaded) {
-    return <LoadingScreen />
+    return <LoadingScreen />;
   } else {
     return (
       <SafeAreaView style={styles.container}>
         <ScrollView style={styles.scroll} stickyHeaderIndices={[0]}>
           <Header />
-          {(user.email.includes("myke.chen@students.lfanet.org") || user.email.includes("aaron.zhang@students.lfanet.org")) ? (
-            <Button onPress={() => { navigation.navigate("Admin") }} uppercase={false} style={{ backgroundColor: '#F37121' }} labelStyle={{ fontFamily: "Montserrat-Bold" }} mode="contained" >
-              Admin Page
-            </Button>
-          ) :
-            (<View></View>)
-          }
+          {user?.email.includes("myke.chen@students.lfanet.org") || user?.email.includes("aaron.zhang@students.lfanet.org") ? (
+            <View>
+              <Button
+                onPress={() => {
+                  navigation.navigate("Admin");
+                }}
+                uppercase={false}
+                style={{ backgroundColor: "#F37121" }}
+                labelStyle={{ fontFamily: "Montserrat-Bold" }}
+                mode="contained"
+              >
+                Admin Page
+              </Button>
+            </View>
+          ) : (
+            <View></View>
+          )}
           <View style={styles.sectionContainer}>
             <View style={styles.headerContainer}>
-              <Image
-                style={styles.headerIcon}
-                source={require("../assets/icons8-megaphone-48.png")}
-              />
-              <Text style={styles.headerText}>Annnouncements</Text>
+              <Image style={styles.headerIcon} source={require("../assets/icons8-megaphone-48.png")} />
+              <Text style={styles.headerText}>Events</Text>
             </View>
             <AnnouncementModal />
           </View>
           <View style={styles.sectionContainer}>
             <View style={styles.headerContainer}>
-              <Image
-                style={styles.headerIcon}
-                source={require("../assets/icons8-schedule-48.png")}
-              />
-              <Text style={styles.headerText}>Events</Text>
+              <Image style={styles.headerIcon} source={require("../assets/icons8-schedule-48.png")} />
+              <Text style={styles.headerText}>Schedule</Text>
             </View>
             <MoreEventsBtn url={lfaURL}></MoreEventsBtn>
           </View>
           <View style={styles.sectionContainer}>
             <View style={styles.headerContainer}>
-              <Image
-                style={styles.headerIcon}
-                source={require("../assets/icons8-photo-gallery-48.png")}
-              />
+              <Image style={styles.headerIcon} source={require("../assets/icons8-photo-gallery-48.png")} />
               <Text style={styles.headerText}>Photo Gallery</Text>
             </View>
           </View>
@@ -101,10 +101,7 @@ export default function Home({ navigation }) {
             <View style={styles.photoGallery}>
               {photos.slice(0, 4).map((item, index) => (
                 <View key={index} style={styles.gridView}>
-                  <Image
-                    source={{ uri: item.uri }}
-                    style={styles.imageView}
-                  />
+                  <Image source={{ uri: item.uri }} style={styles.imageView} />
                 </View>
               ))}
             </View>
@@ -129,7 +126,7 @@ function MoreEventsBtn({ url }) {
   return (
     <TouchableOpacity onPress={handlePress}>
       <View style={styles.eventsBtn}>
-        <Text style={styles.eventsText}>More Events</Text>
+        <Text style={styles.eventsText}>View Schedule</Text>
       </View>
     </TouchableOpacity>
   );
@@ -141,7 +138,7 @@ const width = Dimensions.get("window").width;
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#F6F4F4",
-    flex: 1
+    flex: 1,
   },
 
   scroll: {
@@ -234,18 +231,18 @@ const styles = StyleSheet.create({
   },
 
   gridView: {
-    width: '50%',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    backgroundColor: 'white',
+    width: "50%",
+    flexDirection: "row",
+    justifyContent: "center",
+    backgroundColor: "white",
   },
 
   imageView: {
-    width: '100%',
-    alignSelf: 'center',
-    height: 'auto',
-    aspectRatio: 1 / 1
-  }
+    width: "100%",
+    alignSelf: "center",
+    height: "auto",
+    aspectRatio: 1 / 1,
+  },
 });
 
 /*

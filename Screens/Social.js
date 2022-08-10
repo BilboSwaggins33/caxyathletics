@@ -1,13 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  Image,
-  Dimensions,
-  FlatList,
-} from "react-native";
+import { View, StyleSheet, Text, TouchableOpacity, Image, Dimensions, FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import "react-native-gesture-handler";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -41,7 +33,7 @@ function Social({ navigation }) {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [currentUser, setCurrentUser] = useState([]);
   const { user } = useSelector((state) => state.userReducer);
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const db = getDatabase();
   const auth = getAuth();
   const usersRef = ref(db, "users/");
@@ -55,9 +47,7 @@ function Social({ navigation }) {
   useEffect(() => {
     loadFont();
     onValue(usersRef, (snapshot) => {
-      setUsers(
-        Object.values(snapshot.val()).sort((a, b) => a.points < b.points)
-      );
+      setUsers(Object.values(snapshot.val()).sort((a, b) => a.points < b.points));
     });
 
     setCurrentUser(user);
@@ -70,8 +60,10 @@ function Social({ navigation }) {
       labelStyle={{ fontFamily: "Montserrat-SemiBold" }}
       mode="contained"
       onPress={() => {
-        dispatch(setUser(null))
-        signOut(auth).then(() => { console.log('sign out success') })
+        dispatch(setUser(null));
+        signOut(auth).then(() => {
+          console.log("sign out success");
+        });
       }}
     >
       Sign Out
@@ -85,15 +77,9 @@ function Social({ navigation }) {
       <SafeAreaView style={styles.container}>
         <Header />
         <View style={styles.headerContainer}>
-          <Image
-            style={styles.headerIcon}
-            source={require("../assets/icons8-user-48.png")}
-          />
+          <Image style={styles.headerIcon} source={require("../assets/icons8-user-48.png")} />
           <Text style={styles.headerText}>Profile</Text>
-          <Image
-            style={styles.settingsIcon}
-            source={require("../assets/icons8-settings-48.png")}
-          />
+          <Image style={styles.settingsIcon} source={require("../assets/icons8-settings-48.png")} />
         </View>
         <View style={styles.profileContainer}>
           <Image
@@ -105,19 +91,12 @@ function Social({ navigation }) {
             }}
             source={{ uri: currentUser.photoURL }}
           />
-          <Text style={{ fontFamily: "Montserrat-Bold", fontSize: 20 }}>
-            {currentUser.displayName}
-          </Text>
-          <Text style={{ fontFamily: "Montserrat-Bold", fontSize: 20 }}>
-            {points}
-          </Text>
+          <Text style={{ fontFamily: "Montserrat-Bold", fontSize: 20 }}>{currentUser.displayName}</Text>
+          <Text style={{ fontFamily: "Montserrat-Bold", fontSize: 20 }}>{points}</Text>
           <SignOutButton />
         </View>
         <View style={styles.headerContainer}>
-          <Image
-            style={styles.headerIcon}
-            source={require("../assets/icons8-leaderboard-48.png")}
-          />
+          <Image style={styles.headerIcon} source={require("../assets/icons8-leaderboard-48.png")} />
           <Text style={styles.headerText}>Leaderboard</Text>
         </View>
         <TouchableOpacity onPress={() => navigation.navigate("Leaderboard")}>
@@ -143,7 +122,7 @@ function LeaderboardModal({ navigation }) {
   const [users, setUsers] = useState([]);
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [currentUser, setCurrentUser] = useState([]);
-  const [rank, setRank] = useState(0)
+  const [rank, setRank] = useState(0);
   const { user } = useSelector((state) => state.userReducer);
   const db = getDatabase();
   const auth = getAuth();
@@ -153,11 +132,8 @@ function LeaderboardModal({ navigation }) {
   useEffect(() => {
     loadFont();
     onValue(usersRef, (snapshot) => {
-      setUsers(
-        Object.values(snapshot.val()).sort((a, b) => a.points < b.points)
-      );
-      setRank(users.findIndex(x => x.uid == user.uid) + 1)
-
+      setUsers(Object.values(snapshot.val()).sort((a, b) => a.points < b.points));
+      setRank(users.findIndex((x) => x.uid == user.uid) + 1);
     });
 
     setCurrentUser(user);
@@ -165,7 +141,16 @@ function LeaderboardModal({ navigation }) {
 
   useEffect(() => {
     navigation.getParent()?.setOptions({ tabBarStyle: { display: "none" } });
-    return () => navigation.getParent()?.setOptions({ tabBarStyle: undefined });
+    return () =>
+      navigation.getParent()?.setOptions({
+        tabBarStyle: {
+          paddingTop: 10,
+          borderTopWidth: 1,
+          shadowOpacity: 0.2,
+          shadowOffset: { width: 0, height: 10 },
+          shadowRadius: 20,
+        },
+      });
   }, [navigation]);
 
   async function loadFont() {
@@ -210,7 +195,6 @@ function LeaderboardModal({ navigation }) {
                 width: 50,
                 height: 50,
                 borderRadius: 100,
-                borderWidth: 1,
                 borderColor: "white",
                 marginBottom: 5,
               }}
@@ -267,10 +251,7 @@ function LeaderboardModal({ navigation }) {
               if (index === 0) {
                 return (
                   <View style={styles.lbContainer}>
-                    <Image
-                      style={styles.firstIcon}
-                      source={require("../assets/icons8-trophy-60.png")}
-                    />
+                    <Image style={styles.firstIcon} source={require("../assets/icons8-trophy-60.png")} />
                     <Text style={styles.userText}>{users[0]?.name}</Text>
                     <Text style={styles.pointsText}>{users[0]?.points}</Text>
                   </View>
@@ -278,10 +259,7 @@ function LeaderboardModal({ navigation }) {
               } else if (index === 1) {
                 return (
                   <View style={styles.lbContainer}>
-                    <Image
-                      style={styles.secondIcon}
-                      source={require("../assets/icons8-trophy-60.png")}
-                    />
+                    <Image style={styles.secondIcon} source={require("../assets/icons8-trophy-60.png")} />
                     <Text style={styles.userText}>{users[1]?.name}</Text>
                     <Text style={styles.pointsText}>{users[1]?.points}</Text>
                   </View>
@@ -289,10 +267,7 @@ function LeaderboardModal({ navigation }) {
               } else if (index === 2) {
                 return (
                   <View style={styles.lbContainer}>
-                    <Image
-                      style={styles.thirdIcon}
-                      source={require("../assets/icons8-trophy-60.png")}
-                    />
+                    <Image style={styles.thirdIcon} source={require("../assets/icons8-trophy-60.png")} />
                     <Text style={styles.userText}>{users[2]?.name}</Text>
                     <Text style={styles.pointsText}>{users[2]?.points}</Text>
                   </View>
@@ -353,7 +328,7 @@ const styles = StyleSheet.create({
     width: width - 30,
     marginLeft: 15,
     borderRadius: 8,
-    height: 100,
+    height: 120,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
@@ -462,6 +437,7 @@ const styles = StyleSheet.create({
 
   lbText: {
     fontFamily: "Montserrat-Bold",
+    color: "white",
   },
 
   userText: {
@@ -539,6 +515,8 @@ const styles = StyleSheet.create({
     marginLeft: 25,
     backgroundColor: "#F37121",
     borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
   },
   leaderboardText: {
     fontSize: 16,

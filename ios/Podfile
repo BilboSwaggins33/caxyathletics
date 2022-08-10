@@ -35,6 +35,10 @@ target 'caxyathletics' do
 
   pod 'react-native-location', :path => '../node_modules/react-native-location'
 
+  pod 'react-native-cameraroll', :path => '../node_modules/@react-native-community/cameraroll'
+
+  pod 'react-native-image-picker', :path => '../node_modules/react-native-image-picker'
+
   post_install do |installer|
     react_native_post_install(installer)
     __apply_Xcode_12_5_M1_post_install_workaround(installer)

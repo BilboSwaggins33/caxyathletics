@@ -10,24 +10,33 @@ import Loading from "./Screens/Loading";
 import Login from "./Screens/Login";
 import Admin from "./Screens/Admin";
 import { firebaseConfig } from "./config";
-import { initializeApp } from "@firebase/app";
-import { getAuth, onAuthStateChanged } from "@firebase/auth";
+import { initializeApp } from "firebase/app";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { ActivityIndicator } from "react-native-paper";
-import { setUser } from "./redux/actions";
+import { setPoints, setRewardInfo, setUser } from "./redux/actions";
 import { useDispatch, useSelector } from "react-redux";
+import { getDatabase, ref, get } from "firebase/database";
+import { getMessaging, getToken } from "firebase/messaging";
 
 export default function App() {
   const firebaseApp = initializeApp(firebaseConfig);
 
   const auth = getAuth(firebaseApp);
+  const db = getDatabase(firebaseApp);
   const dispatch = useDispatch();
+
   const { user } = useSelector((state) => state.userReducer);
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     onAuthStateChanged(auth, (u) => {
-      //console.log(u)
       if (u) {
         dispatch(setUser(u));
+        get(ref(db, "users/" + u.uid)).then((snapshot) => {
+          //console.log(snapshot.val().points);
+          dispatch(setPoints(snapshot.val().points, 0));
+          dispatch(setRewardInfo(snapshot.val().redeemedPrizes));
+          //console.log(snapshot.val().redeemedPrizes);
+        });
         //console.log(user.email)
       } else {
         dispatch(setUser(null));
@@ -41,25 +50,13 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator>
         {isLoading ? (
-          <Stack.Screen
-            name="Loading"
-            component={Loading}
-            options={{ headerShown: false }}
-          />
+          <Stack.Screen name="Loading" component={Loading} options={{ headerShown: false }} />
         ) : !user ? (
-          <Stack.Screen
-            name="Login"
-            component={Login}
-            options={{ headerShown: false }}
-          />
-        ) : // change dye email for mine for testing
-          (
-            <Stack.Screen
-              name="Main"
-              component={NavBar}
-              options={{ headerShown: false }}
-            />
-          )}
+          <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
+        ) : (
+          // change dye email for mine for testing
+          <Stack.Screen name="Main" component={NavBar} options={{ headerShown: false }} />
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );
