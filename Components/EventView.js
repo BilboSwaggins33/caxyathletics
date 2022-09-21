@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Text, Dimensions, Image } from "react-native";
 import * as Font from "expo-font";
 import { MontserratFont } from "../assets/fonts";
-
+import SchoolLogos from "../scripts/getLogos/SchoolLogos";
 export default function EventView(props) {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   async function loadFont() {
@@ -17,25 +17,44 @@ export default function EventView(props) {
   } else {
     return (
       <View style={styles.eventView}>
-        <Text style={styles.gameTitle}>{props.title}</Text>
-        <Text style={styles.specialEvent}>Special Event</Text>
-        <View style={styles.vsContainer}>
-          <Image style={styles.teamIcon} source={require("../assets/LFA_interlocking_logo_F2.png")} />
-          <Text>vs</Text>
-          <Image style={styles.teamIcon} source={require("../assets/LFA_interlocking_logo_F2.png")} />
-        </View>
-        <View style={styles.infoContainer}>
-          <Image style={styles.infoIcon} source={require("../assets/icons8-location-48.png")} />
-          <Text style={styles.infoText}>{props.location}</Text>
-        </View>
-        <View style={styles.infoContainer}>
-          <Image style={styles.infoIcon} source={require("../assets/icons8-clock-48.png")} />
-          <Text style={styles.infoText}>{props.time}</Text>
-        </View>
-        <View style={styles.infoContainer}>
-          <Image style={styles.infoIcon} source={require("../assets/icons8-map-pin-48.png")} />
-          <Text style={styles.infoText}>{props.facility}</Text>
-        </View>
+        {props.title == "No Events for Today" ? (
+          <View>
+            <Text style={styles.gameTitle}>{props.title}</Text>
+          </View>
+        ) : (
+          <View>
+            <Text style={styles.gameTitle}>{props.title}</Text>
+            <Text style={styles.specialEvent}>{props.type}</Text>
+            <View style={styles.vsContainer}>
+              <Image style={styles.teamIcon} source={require("../assets/LFA_interlocking_logo_F2.png")} />
+              <Text>vs</Text>
+              <Image
+                style={styles.teamIcon}
+                source={{
+                  uri: props.opponent
+                    ? SchoolLogos[props.opponent].url
+                    : "https://cfunity-school-logos.nfhsnetwork.com/v1/4baf4f0f63_p614.png",
+                }}
+              />
+            </View>
+            <View style={{ alignItems: "center" }}>
+              <View>
+                <View style={styles.infoContainer}>
+                  <Image style={styles.infoIcon} source={require("../assets/icons8-location-48.png")} />
+                  <Text style={styles.infoText}>{props.location}</Text>
+                </View>
+                <View style={styles.infoContainer}>
+                  <Image style={styles.infoIcon} source={require("../assets/icons8-clock-48.png")} />
+                  <Text style={styles.infoText}>{props.time}</Text>
+                </View>
+                <View style={styles.infoContainer}>
+                  <Image style={styles.infoIcon} source={require("../assets/icons8-map-pin-48.png")} />
+                  <Text style={styles.infoText}>{props.facility}</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
       </View>
     );
   }
@@ -46,7 +65,7 @@ const width = Dimensions.get("window").width;
 const styles = StyleSheet.create({
   eventView: {
     width: width - 50,
-    height: 350,
+    height: 375,
     backgroundColor: "white",
     borderRadius: 20,
     marginLeft: 25,
@@ -56,6 +75,7 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     marginBottom: 10,
     padding: 15,
+    justifyContent: "center",
   },
 
   vsContainer: {
@@ -91,15 +111,14 @@ const styles = StyleSheet.create({
   },
 
   infoIcon: {
-    width: 30,
-    height: 30,
+    width: 20,
+    height: 20,
     marginRight: 10,
   },
 
   infoContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginLeft: 80,
     marginTop: 10,
   },
 });

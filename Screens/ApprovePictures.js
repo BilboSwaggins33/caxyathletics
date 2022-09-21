@@ -1,29 +1,16 @@
 import React, { useState, useEffect } from "react";
-import {
-  getDatabase,
-  ref,
-  set,
-  onValue,
-  update,
-  remove,
-  push,
-  get,
-  child,
-  onChildAdded,
-  onChildRemoved,
-} from "firebase/database";
+import { getDatabase, ref, set, onValue } from "firebase/database";
 import {
   StyleSheet,
   View,
   Text,
-  FlatList,
   SafeAreaView,
   Image,
   TouchableOpacity,
   Modal,
   Dimensions,
-  Pressable,
   ScrollView,
+  FlatList,
 } from "react-native";
 import { Button, IconButton } from "react-native-paper";
 import * as Font from "expo-font";
@@ -50,12 +37,10 @@ export default function ApprovePictures({ navigation }) {
 
     if (isMounted) {
       onValue(admingalleryRef, (snapshot) => {
-        console.log(snapshot.val(), "hello");
         snapshot.val() ? setadminPhotos(Object.values(snapshot.val())) : setadminPhotos([]);
       });
 
       onValue(galleryRef, (snapshot) => {
-        console.log(snapshot.exists(), "hello");
         snapshot.val() ? setPhotos(Object.values(snapshot.val())) : setPhotos([]);
       });
     }
@@ -100,7 +85,26 @@ export default function ApprovePictures({ navigation }) {
       setModalVisible(true);
     });
   };
-
+  const renderItem = ({ item, index }) => {
+    return (
+      <View key={index}>
+        <TouchableOpacity
+          onPress={() => {
+            handlePicture(item, true);
+          }}
+        >
+          <Image
+            source={{ uri: item.uri }}
+            style={{
+              width: width / 3,
+              height: "auto",
+              aspectRatio: 1 / 1,
+            }}
+          />
+        </TouchableOpacity>
+      </View>
+    );
+  };
   const handleApprove = () => {
     uploadPost();
     deletePost();
@@ -117,7 +121,7 @@ export default function ApprovePictures({ navigation }) {
   } else {
     return (
       <SafeAreaView style={styles.container}>
-        <ScrollView>
+        <View>
           <View style={{ margin: 10, flexDirection: "row", alignItems: "center" }}>
             <IconButton
               icon="arrow-left"
@@ -156,19 +160,7 @@ export default function ApprovePictures({ navigation }) {
               </View>
             </View>
           </View>
-          <View style={styles.photoGallery}>
-            {photos.map((item, index) => (
-              <View key={index} style={styles.gridView}>
-                <TouchableOpacity
-                  onPress={() => {
-                    handlePicture(item, true);
-                  }}
-                >
-                  <Image source={{ uri: item.uri }} style={styles.imageView} />
-                </TouchableOpacity>
-              </View>
-            ))}
-          </View>
+          <FlatList data={photos} renderItem={renderItem} numColumns={3} />
           <Modal
             animationType="slide"
             transparent={false}
@@ -186,22 +178,21 @@ export default function ApprovePictures({ navigation }) {
                     justifyContent: "space-between",
                   }}
                 >
-                  <IconButton icon="arrow-left" onPress={() => setModalVisible(!modalVisible)} />
+                  <IconButton size={16} color="white" icon="close" onPress={() => setModalVisible(!modalVisible)} />
                   <View>
                     <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
-                      <Image source={{ uri: img.profUrl }} style={{ width: 25, height: 25, borderRadius: 25, marginRight: 10 }} />
+                      <Image source={{ uri: img.profUrl }} style={{ width: 16, height: 16, borderRadius: 25, marginRight: 10 }} />
                       <Text style={styles.modalText}>{img.user}</Text>
                     </View>
                     <Text style={[styles.modalText, styles.time]}>{img.time}</Text>
                   </View>
-                  <Text> </Text>
+                  <View style={{ width: 40 }}></View>
                 </View>
                 <Image
                   resizeMode="contain"
                   source={{ uri: img.uri }}
                   style={{ width: "100%", height: "auto", aspectRatio: 9 / 16 }}
                 />
-
                 {approved ? (
                   <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
                     <Button style={[styles.button, styles.buttonClose]} onPress={() => handleApprove()} uppercase={false}>
@@ -238,7 +229,9 @@ export default function ApprovePictures({ navigation }) {
           >
             <View style={styles.deleteModalView}>
               <View style={styles.deleteView}>
-                <Text style={styles.modalText}>Are you sure? You might not be able to recover the photo.</Text>
+                <Text style={{ textAlign: "center", fontFamily: "Montserrat-Medium", fontSize: 14, margin: 10 }}>
+                  Are you sure? You might not be able to recover the photo.
+                </Text>
                 <View style={{ flexDirection: "row" }}>
                   <Button style={[styles.button, styles.buttonClose]} onPress={() => handleDelete()}>
                     <Text style={styles.textStyle}>Delete</Text>
@@ -250,13 +243,17 @@ export default function ApprovePictures({ navigation }) {
               </View>
             </View>
           </Modal>
-        </ScrollView>
+        </View>
       </SafeAreaView>
     );
   }
 }
 
 const styles = StyleSheet.create({
+  centeredView: {
+    backgroundColor: "black",
+  },
+
   container: {
     backgroundColor: "#F6F4F4",
   },
@@ -306,7 +303,7 @@ const styles = StyleSheet.create({
   },
 
   modalView: {
-    backgroundColor: "white",
+    backgroundColor: "black",
   },
   button: {
     borderRadius: 10,
@@ -323,6 +320,8 @@ const styles = StyleSheet.create({
   modalText: {
     textAlign: "center",
     fontFamily: "Montserrat-Medium",
+    color: "white",
+    fontSize: 12,
   },
   textStyle: {
     color: "white",

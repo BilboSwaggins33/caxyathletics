@@ -12,7 +12,6 @@ import { Portal, Modal, IconButton } from "react-native-paper";
 import * as Font from "expo-font";
 import { MontserratFont } from "../assets/fonts";
 import { setUser } from "../redux/actions";
-
 const Stack = createStackNavigator();
 
 export default function SocialStack({ navigation }) {
@@ -29,27 +28,35 @@ export default function SocialStack({ navigation }) {
 }
 
 function Social({ navigation }) {
-  const [users, setUsers] = useState([]);
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [currentUser, setCurrentUser] = useState([]);
+  const [redeemedInfo, setRedeemedInfo] = useState([]);
+  const [housePoints, setHousePoints] = useState({});
   const { user } = useSelector((state) => state.userReducer);
   const dispatch = useDispatch();
   const db = getDatabase();
   const auth = getAuth();
-  const usersRef = ref(db, "users/");
-  const { points, redeemedInfo } = useSelector((state) => state.userReducer);
-  console.log(redeemedInfo);
+  const { points } = useSelector((state) => state.userReducer);
   async function loadFont() {
     await Font.loadAsync(MontserratFont);
     setFontsLoaded(true);
   }
 
+  const houses = [
+    { house: "Sargent", uri: require("../assets/houseImages/Sargent.jpeg") },
+    { house: "Bird", uri: require("../assets/houseImages/Bird.jpeg") },
+    { house: "Lewis", uri: require("../assets/houseImages/Lewis.jpeg") },
+    { house: "Welch", uri: require("../assets/houseImages/Welch.jpeg") },
+  ];
+
   useEffect(() => {
     loadFont();
-    onValue(usersRef, (snapshot) => {
-      setUsers(Object.values(snapshot.val()).sort((a, b) => a.points < b.points));
+    onValue(ref(db, "users/" + user.uid), (snapshot) => {
+      setRedeemedInfo(snapshot.val().redeemedPrizes);
     });
-
+    onValue(ref(db, "house/"), (snapshot) => {
+      setHousePoints(snapshot.val());
+    });
     setCurrentUser(user);
   }, [currentUser]);
 
@@ -79,7 +86,9 @@ function Social({ navigation }) {
         <View style={styles.headerContainer}>
           <Image style={styles.headerIcon} source={require("../assets/icons8-user-48.png")} />
           <Text style={styles.headerText}>Profile</Text>
-          <Image style={styles.settingsIcon} source={require("../assets/icons8-settings-48.png")} />
+          {
+            //<Image style={styles.settingsIcon} source={require("../assets/icons8-settings-48.png")} />
+          }
         </View>
         <View style={styles.profileContainer}>
           <Image
@@ -93,7 +102,8 @@ function Social({ navigation }) {
           <Text style={{ fontFamily: "Montserrat-Bold", fontSize: 20, marginVertical: 20 }}>{currentUser.displayName}</Text>
           <Text style={{ fontFamily: "Montserrat-Medium", fontSize: 20, marginTop: 15 }}>{points} Points</Text>
           <Text style={{ fontFamily: "Montserrat-Medium", fontSize: 20, marginTop: 5 }}>
-            {redeemedInfo.filter(Boolean).length} Rewards Redeemed
+            {redeemedInfo.filter((x) => x == true).length}
+            {redeemedInfo.filter((x) => x == true).length == 1 ? " Reward Claimed" : " Rewards Claimed"}
           </Text>
 
           <SignOutButton />
@@ -104,16 +114,20 @@ function Social({ navigation }) {
         </View>
         <TouchableOpacity onPress={() => navigation.navigate("Leaderboard")}>
           <View style={styles.leaderboardContainer}>
-            {/* <FlatList
-            data={users.slice(0, 3)}
-            contentContainerStyle={{ padding: 15 }}
-            renderItem={({ item, index }) => (
-              <Text style={styles.leaderboardText}>
-                {index + 1}. {item.name} : {item.points} points
-              </Text>
-            )}
-          /> */}
-            <Text style={styles.lbText}>View Leaderboard</Text>
+            <FlatList
+              data={houses}
+              numColumns={4}
+              columnWrapperStyle={{ flex: 1 }}
+              renderItem={({ item, index }) => {
+                return (
+                  <View style={{ alignItems: "center", justifyContent: "center" }}>
+                    <Image style={{ height: 48, width: 48, margin: 15, marginTop: 30 }} source={item.uri} />
+                    <Text style={{ fontFamily: "Montserrat-Medium" }}>{Math.floor(housePoints[item.house]?.points)}</Text>
+                    <Text style={{ fontFamily: "Montserrat-Medium" }}>Points</Text>
+                  </View>
+                );
+              }}
+            />
           </View>
         </TouchableOpacity>
       </SafeAreaView>
@@ -210,43 +224,7 @@ function LeaderboardModal({ navigation }) {
             <Text style={styles.lbUserBoldText}>{points}</Text>
           </View>
         </View>
-        {/* <View style={styles.podiumContainer}>
-          <View style={styles.rank2}>
-            <Image
-              style={styles.secondIcon}
-              source={require("../assets/icons8-second-place-ribbon-48.png")}
-            />
-            <Text style={styles.podiumName}>{users[1]?.name}</Text>
-            <Text style={styles.podiumPoints}>{users[1]?.points} pts</Text>
-          </View>
-          <View style={styles.rank1}>
-            <Image
-              style={styles.firstIcon}
-              source={require("../assets/icons8-first-place-ribbon-60.png")}
-            />
-
-            <Text style={styles.podiumName}>{users[0]?.name}</Text>
-            <Text style={styles.podiumPoints}>{users[0]?.points} pts</Text>
-          </View>
-          <View style={styles.rank3}>
-            <Image
-              style={styles.thirdIcon}
-              source={require("../assets/icons8-third-place-ribbon-48.png")}
-            />
-            <Text style={styles.podiumName}>{users[2]?.name}</Text>
-            <Text style={styles.podiumPoints}>{users[2]?.points} pts</Text>
-          </View>
-        </View> */}
-
-        <View style={styles.modalLeaderboardContainer}>
-          {/* <View style={styles.lbHeader}>
-            <Text style={styles.lbHeaderText}>Rank</Text>
-            <Text style={styles.lbHeaderText}>User</Text>
-            <Text style={styles.lbHeaderText}></Text>
-            <Text style={styles.lbHeaderText}></Text>
-            <Text style={styles.lbHeaderText}>Points</Text>
-          </View> */}
-
+        <View>
           <FlatList
             data={users}
             // ItemSeparatorComponent={() => Separator()}
@@ -500,7 +478,7 @@ const styles = StyleSheet.create({
 
   profileContainer: {
     width: width - 50,
-    height: 410,
+    height: 380,
     backgroundColor: "white",
     borderRadius: 20,
     shadowColor: "rgba(0, 0, 0, 0.25)",
@@ -515,12 +493,16 @@ const styles = StyleSheet.create({
 
   leaderboardContainer: {
     width: width - 50,
-    height: 100,
+    height: 150,
     marginLeft: 25,
-    backgroundColor: "#F37121",
+    backgroundColor: "white",
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
+    shadowColor: "rgba(0, 0, 0, 0.25)",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.7,
+    shadowRadius: 20,
   },
   leaderboardText: {
     fontSize: 16,

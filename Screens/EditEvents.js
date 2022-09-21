@@ -9,7 +9,8 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { getFocusedRouteNameFromRoute, useIsFocused } from "@react-navigation/native";
 import { parse } from "node-html-parser";
 import DropDownPicker from "react-native-dropdown-picker";
-
+import moment from "moment";
+import { August, September, October, November, December, January, February, March, April, May } from "../Data/Schedule/Months.js";
 const Stack = createStackNavigator();
 export default function EditEvents({ navigation, route }) {
   React.useLayoutEffect(() => {
@@ -42,7 +43,9 @@ export default function EditEvents({ navigation, route }) {
 function EventCalendar({ navigation, route }) {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [day, setDay] = useState({
-    dateString: new Date().toISOString().slice(0, 10),
+    dateString: moment().format().slice(0, 10),
+    day: moment().date(),
+    month: moment().month() + 1,
   });
   const db = getDatabase();
   const [events, setEvents] = useState([{}]);
@@ -65,24 +68,33 @@ function EventCalendar({ navigation, route }) {
       if (snapshot.exists()) {
         setEvents(snapshot.val());
       } else {
-        setEvents([{ title: "", time: "", location: "No events for today", facility: "" }]);
+        setEvents([{ title: "No events for today", time: "", location: "Lake Forest Academy", facility: "", type: "" }]);
       }
     });
   }
 
   async function getData(day) {
-    var response = await fetch("https://www.lfacaxys.org/schedule-results?cal_date=" + day.dateString.slice(0, -2) + "01");
-    switch (response.status) {
-      // status "OK"
-      case 200:
-        var template = await response.text();
-        return template;
-        break;
-      // status "Not Found"
-      case 404:
-        console.log("Not Found");
-        break;
-    }
+    //let lfaurl = "https://www.lfacaxys.org/fs/elements/3627?cal_date=2022-08-01&is_draft=false&is_load_more=true&parent_id=3627";
+    //  let lfaurl = "https://www.lfacaxys.org";
+    // "https://www.lfacaxys.org/schedule-results?cal_date=" +
+    //   day.dateString.slice(0, -2) +
+    //   "01&is_draft=true&is_load_more=true&parent_id=3627&_=1660444668925";
+    //var response = await fetch(lfaurl)
+    // console.log(response.status);
+    // console.log(lfaurl);
+    // switch (response.status) {
+    //   // status "OK"
+    //   case 200:
+    //     var template = await response.text();
+    //     return template;
+    //   // status "Not Found"
+    //   case 404:
+    //     console.log("Not Found");
+    //     break;
+    //   case 403:
+    //     console.log("Forbidden Error 403");
+    //     break;
+    // }
   }
 
   const height = Dimensions.get("window").height;
@@ -93,60 +105,63 @@ function EventCalendar({ navigation, route }) {
   } else {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={{ marginHorizontal: 10, flexDirection: "row", alignItems: "center" }}>
-          <IconButton
-            icon="arrow-left"
-            onPress={() => {
-              navigation.goBack();
-            }}
-          />
-          <Text style={styles.caxyAthleticsTxt}>Admin</Text>
-        </View>
-        <View style={{ marginHorizontal: 15 }}>
-          <Text style={styles.caxyAthleticsTxt}>Events</Text>
-        </View>
-        <Divider style={{ height: 1 }} />
-        <View>
-          <Calendar
-            onDayPress={async (d) => {
-              setDay(d);
-              getEvents(d);
-              // var data = await getData(d);
-              // navigation.navigate("ViewDate", { day: d, data: data });
-            }}
-            markedDates={{ [day.dateString]: { selected: true } }}
-            theme={{
-              calendarBackground: "#F6F4F4",
-              todayTextColor: "#F37121",
-              arrowColor: "#F37121",
-              selectedDayBackgroundColor: "#F37121",
-            }}
-            style={{
-              borderColor: "gray",
-            }}
-          />
-        </View>
-        <Divider style={{ height: 1 }} />
-
-        <ScrollView contentContainerStyle={{ height: events.length * 215 }}>
-          {events.map((event, index) => (
-            <Card
-              onPress={async () => {
-                var data = await getData(day);
-                navigation.navigate("ViewDate", { day: day, data: data });
+        <ScrollView>
+          <View style={{ marginHorizontal: 10, flexDirection: "row", alignItems: "center" }}>
+            <IconButton
+              icon="arrow-left"
+              onPress={() => {
+                navigation.goBack();
               }}
-              mode="elevated"
-              key={index}
-              style={{ padding: 5, backgroundColor: "#F6F4F4" }}
-            >
-              <Card.Title title={event.location} titleNumberOfLines={2} />
-              <Card.Content>
-                <Title>{event.time.trim()}</Title>
-                <Paragraph>{event.title}</Paragraph>
-                <Paragraph>{event.facility}</Paragraph>
-              </Card.Content>
-            </Card>
-          ))}
+            />
+            <Text style={styles.caxyAthleticsTxt}>Admin</Text>
+          </View>
+          <View style={{ marginHorizontal: 15 }}>
+            <Text style={styles.caxyAthleticsTxt}>Events</Text>
+          </View>
+          <Divider style={{ height: 1 }} />
+          <View>
+            <Calendar
+              minDate={"2022-08-10"}
+              maxDate={"2023-05-30"}
+              onDayPress={async (d) => {
+                setDay(d);
+                getEvents(d);
+                // var data = await getData(d);
+                // navigation.navigate("ViewDate", { day: d, data: data });
+              }}
+              markedDates={{ [day.dateString]: { selected: true } }}
+              theme={{
+                calendarBackground: "#F6F4F4",
+                todayTextColor: "#F37121",
+                arrowColor: "#F37121",
+                selectedDayBackgroundColor: "#F37121",
+              }}
+              style={{
+                borderColor: "gray",
+              }}
+            />
+          </View>
+          <Divider style={{ height: 1 }} />
+          <View>
+            {events.map((event, index) => (
+              <Card
+                onPress={async () => {
+                  navigation.navigate("ViewDate", { day: day });
+                }}
+                mode="elevated"
+                key={index}
+                style={{ padding: 5, backgroundColor: "#F6F4F4", borderWidth: 1 }}
+              >
+                <Card.Title title={event.type} titleNumberOfLines={2} />
+                <Card.Content>
+                  <Paragraph style={{ fontFamily: "Montserrat-Bold" }}>{event.title}</Paragraph>
+                  <Title>{event.time.trim()}</Title>
+                  <Paragraph>{event.facility}</Paragraph>
+                  <Paragraph>@ {event.location}</Paragraph>
+                </Card.Content>
+              </Card>
+            ))}
+          </View>
         </ScrollView>
       </SafeAreaView>
     );
@@ -169,20 +184,41 @@ function EventModal({ navigation, route }) {
     { label: "Tennis Court", value: "Tennis Court" },
     { label: "Ice Rink", value: "Ice Rink" },
     { label: "Track", value: "Track" },
-    { label: "Fields", value: "Banana" },
+    { label: "Fields", value: "Fields" },
     { label: "Cressey", value: "Cressey" },
     { label: "Corbin", value: "Corbin" },
     { label: "Atlass", value: "Atlass" },
     { label: "Science Center", value: "Science Center" },
   ]);
+  const [types, setTypes] = useState([
+    { label: "Event", value: "Event" },
+    { label: "Pack the House", value: "Pack the House" },
+    { label: "Senior Night", value: "Senior Night" },
+  ]);
+
+  const dates = {
+    "08": August,
+    "09": September,
+    10: October,
+    11: November,
+    12: December,
+    "01": January,
+    "02": February,
+    "03": March,
+    "04": April,
+    "05": May,
+  };
+
   const [open, setOpen] = useState(false);
+  const [topen, setTopen] = useState(false);
   const [value, setValue] = useState("Crown");
+  const [type, setType] = useState("Event");
 
   const db = getDatabase();
   const eventRef = ref(db, "events/");
-  const { day, data } = route.params;
-  const root = parse(data);
-
+  const { day } = route.params;
+  const root = parse(dates[day.dateString.slice(5, 7)]);
+  //const root = parse("<div></div>");
   async function loadFont() {
     await Font.loadAsync(MontserratFont);
     setFontsLoaded(true);
@@ -203,7 +239,6 @@ function EventModal({ navigation, route }) {
   function getData() {
     var quickAddList = [];
     //console.log(root.structure);
-    //console.log("https://www.lfacaxys.org/schedule-results?cal_date=" + day.dateString.slice(0, -2) + "01");
     get(ref(db, "events/" + day.dateString)).then((snapshot) => {
       try {
         //console.log("snapshot", snapshot.val());
@@ -213,27 +248,38 @@ function EventModal({ navigation, route }) {
         var events = eventDate.querySelectorAll(".fsCalendarInfo");
         if (snapshot.exists()) {
           var titles = snapshot.val().map((a) => a.title);
-          events.forEach(function (item) {
-            if (!titles.includes(item.querySelector(".fsCalendarEventTitle").structuredText)) {
+          for (let i = 0; i < events.length; i++) {
+            if (!titles.includes(events[i].querySelector(".fsCalendarEventTitle").structuredText)) {
               quickAddList.push({
-                title: item.querySelector(".fsCalendarEventTitle").structuredText,
-                time: item.querySelector(".fsTimeRange").structuredText,
-                location: item.querySelector(".fsLocation").structuredText,
+                title: events[i].querySelector(".fsCalendarEventTitle").structuredText,
+                time:
+                  events[i].querySelector(".fsTimeRange") == null
+                    ? "TBD"
+                    : events[i].querySelector(".fsTimeRange").structuredText,
+                location:
+                  events[i].querySelector(".fsLocation") == null ? "Away" : events[i].querySelector(".fsLocation").structuredText,
+                facility: "Crown",
+                type: "Event",
               });
             }
-          });
+          }
+
           //quickAddList.filter((val) => )
           setQuickAdd(quickAddList);
           setAddedEvents(snapshot.val());
         } else {
-          events.forEach(function (item) {
+          //console.log(events[2].querySelector(".fsLocation"));
+          for (let i = 0; i < events.length; i++) {
             quickAddList.push({
-              title: item.querySelector(".fsCalendarEventTitle").structuredText,
-              time: item.querySelector(".fsTimeRange").structuredText,
-              location: item.querySelector(".fsLocation").structuredText,
+              title: events[i].querySelector(".fsCalendarEventTitle").structuredText,
+              time:
+                events[i].querySelector(".fsTimeRange") == null ? "TBD" : events[i].querySelector(".fsTimeRange").structuredText,
+              location:
+                events[i].querySelector(".fsLocation") == null ? "Away" : events[i].querySelector(".fsLocation").structuredText,
               facility: "Crown",
+              type: "Event",
             });
-          });
+          }
           setQuickAdd(quickAddList);
         }
       } catch (e) {
@@ -245,11 +291,13 @@ function EventModal({ navigation, route }) {
     });
   }
 
-  const showEdit = (event, type, i) => {
+  const showEdit = (event, t, i) => {
     setEventTitle(event.title);
     setEventTime(event.time);
     setEventLocation(event.location);
-    setAdded(type);
+    setValue(event.facility);
+    setType(event.type);
+    setAdded(t);
     setIndex(i);
     setVisible(true);
   };
@@ -272,6 +320,7 @@ function EventModal({ navigation, route }) {
             <IconButton color="black" icon="close" onPress={handleEvents} />
           </View>
           <View style={{ margin: 20 }}>
+            <Text style={styles.caxyAthleticsTxt}>{day.dateString}</Text>
             <Button
               uppercase={false}
               style={{ width: 200, marginVertical: 10 }}
@@ -286,6 +335,7 @@ function EventModal({ navigation, route }) {
                     time: " 4:00 PM",
                     location: "Lake Forest Academy",
                     facility: "Crown",
+                    type: "Event",
                   },
                   null,
                   -1
@@ -297,11 +347,12 @@ function EventModal({ navigation, route }) {
             <Text style={styles.caxyAthleticsTxt}>Added Events</Text>
             {addedEvents.map((event, i) => (
               <Card mode="contained" key={i} style={{ marginVertical: 10, padding: 2, backgroundColor: "#F37121" }}>
-                <Card.Title titleStyle={{ color: "white" }} title={event.location} titleNumberOfLines={2} />
+                <Card.Title titleStyle={{ color: "white" }} title={event.type} titleNumberOfLines={2} />
                 <Card.Content>
+                  <Paragraph style={{ color: "white", fontFamily: "Montserrat-Bold" }}>{event.title}</Paragraph>
                   <Title style={{ color: "white" }}>{event.time.trim()}</Title>
-                  <Paragraph style={{ color: "white" }}>{event.title}</Paragraph>
                   <Paragraph style={{ color: "white" }}>{event.facility}</Paragraph>
+                  <Paragraph style={{ color: "white" }}>@ {event.location}</Paragraph>
                 </Card.Content>
                 <Card.Actions>
                   <Button
@@ -338,11 +389,12 @@ function EventModal({ navigation, route }) {
             <Text style={styles.caxyAthleticsTxt}>Quick Add</Text>
             {quickAdd.map((event, i) => (
               <Card mode="contained" key={i} style={{ marginVertical: 10, padding: 5 }}>
-                <Card.Title title={event.location} titleNumberOfLines={2} />
+                <Card.Title title={event.type} titleNumberOfLines={2} />
                 <Card.Content>
+                  <Paragraph style={{ fontFamily: "Montserrat-Bold" }}>{event.title}</Paragraph>
                   <Title>{event.time.trim()}</Title>
-                  <Paragraph>{event.title}</Paragraph>
                   <Paragraph>{event.facility}</Paragraph>
+                  <Paragraph>@ {event.location}</Paragraph>
                 </Card.Content>
                 <Card.Actions>
                   <Button
@@ -377,9 +429,19 @@ function EventModal({ navigation, route }) {
             <Modal
               dismissable={false}
               visible={visible}
-              contentContainerStyle={{ padding: 20, backgroundColor: "white", paddingVertical: 50, marginBottom: height / 3 }}
+              contentContainerStyle={{ padding: 20, backgroundColor: "white", paddingVertical: 50, marginBottom: height / 4 }}
             >
               <Text style={styles.caxyAthleticsTxt}>Edit Event</Text>
+              <DropDownPicker
+                open={topen}
+                value={type}
+                items={types}
+                setOpen={setTopen}
+                setValue={setType}
+                setItems={setTypes}
+                placeholder="Event"
+                style={{ marginVertical: 10 }}
+              />
               <TextInput
                 label="Location"
                 selectionColor="#F37121"
@@ -412,6 +474,7 @@ function EventModal({ navigation, route }) {
                 placeholder="Facility"
                 style={{ marginVertical: 10 }}
               />
+
               <View style={{ flexDirection: "row" }}>
                 <Button
                   uppercase={false}
@@ -423,11 +486,23 @@ function EventModal({ navigation, route }) {
                     added == null
                       ? setAddedEvents([
                           ...addedEvents,
-                          { title: eventTitle, time: eventTime, location: eventLocation, facility: value },
+                          { title: eventTitle, time: eventTime, location: eventLocation, facility: value, type: type },
                         ])
                       : added
-                      ? (addedEvents[index] = { title: eventTitle, time: eventTime, location: eventLocation, facility: value })
-                      : (quickAdd[index] = { title: eventTitle, time: eventTime, location: eventLocation, facility: value });
+                      ? (addedEvents[index] = {
+                          title: eventTitle,
+                          time: eventTime,
+                          location: eventLocation,
+                          facility: value,
+                          type: type,
+                        })
+                      : (quickAdd[index] = {
+                          title: eventTitle,
+                          time: eventTime,
+                          location: eventLocation,
+                          facility: value,
+                          type: type,
+                        });
 
                     setVisible(false);
                   }}
@@ -461,7 +536,7 @@ const styles = StyleSheet.create({
     color: "#3E3939",
     fontFamily: "Montserrat-Bold",
     justifyContent: "center",
-    marginVertical: 10,
+    marginVertical: 5,
   },
   headerContainer: {
     margin: 10,

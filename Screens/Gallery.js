@@ -65,13 +65,36 @@ export default function Gallery({ navigation }) {
   const savePhoto = (url) => {
     CameraRoll.save(url);
   };
+
+  const renderItem = ({ item, index }) => {
+    return (
+      <View key={index}>
+        <TouchableOpacity
+          onPress={() => {
+            handlePicture(item);
+          }}
+        >
+          <Image
+            source={{ uri: item.uri }}
+            style={{
+              width: width / 3,
+              height: "auto",
+              aspectRatio: 1 / 1,
+            }}
+          />
+        </TouchableOpacity>
+      </View>
+    );
+  };
   if (!fontsLoaded) {
     return null;
   } else {
     return (
       <SafeAreaView style={styles.container}>
-        <ScrollView stickyHeaderIndices={[0]}>
+        <ScrollView>
           <Header />
+        </ScrollView>
+        <View>
           <View style={styles.sectionContainer}>
             <View style={styles.headerContainer}>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -92,19 +115,8 @@ export default function Gallery({ navigation }) {
               </Button>
             </View>
           </View>
-          <View style={styles.photoGallery}>
-            {photos.map((item, index) => (
-              <View key={index} style={styles.gridView}>
-                <TouchableOpacity
-                  onPress={() => {
-                    handlePicture(item);
-                  }}
-                >
-                  <Image source={{ uri: item.uri }} style={styles.imageView} />
-                </TouchableOpacity>
-              </View>
-            ))}
-          </View>
+          <FlatList data={photos} renderItem={renderItem} numColumns={3} />
+
           <Modal
             animationType="slide"
             transparent={false}
@@ -113,8 +125,8 @@ export default function Gallery({ navigation }) {
               setModalVisible(!modalVisible);
             }}
           >
-            <SafeAreaView>
-              <View style={{ marginTop: 10 }}>
+            <SafeAreaView style={{ backgroundColor: "black" }}>
+              <View style={{ margin: 10 }}>
                 <View
                   style={{
                     flexDirection: "row",
@@ -122,7 +134,7 @@ export default function Gallery({ navigation }) {
                     justifyContent: "space-between",
                   }}
                 >
-                  <IconButton icon="arrow-left" onPress={() => setModalVisible(!modalVisible)} />
+                  <IconButton color="white" icon="arrow-left" onPress={() => setModalVisible(!modalVisible)} />
                   <View>
                     <View
                       style={{
@@ -150,6 +162,7 @@ export default function Gallery({ navigation }) {
                       setConfirmationVisible(!confirmationVisible);
                       setModalVisible(!modalVisible);
                     }}
+                    color="white"
                   />
                 </View>
               </View>
@@ -191,7 +204,7 @@ export default function Gallery({ navigation }) {
               </View>
             </View>
           </Modal>
-        </ScrollView>
+        </View>
       </SafeAreaView>
     );
   }
@@ -202,7 +215,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#F6F4F4",
   },
   headerContainer: {
-    margin: 20,
+    marginHorizontal: 20,
+    marginVertical: 10,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -233,6 +247,7 @@ const styles = StyleSheet.create({
   modalText: {
     textAlign: "center",
     fontFamily: "Montserrat-Medium",
+    color: "white",
   },
   textStyle: {
     color: "white",
@@ -241,25 +256,6 @@ const styles = StyleSheet.create({
   },
   time: {
     marginVertical: 5,
-  },
-  photoGallery: {
-    backgroundColor: "#F6F4F4",
-    flexDirection: "row",
-    flexWrap: "wrap",
-  },
-
-  gridView: {
-    width: "33.33%",
-    flexDirection: "row",
-    justifyContent: "center",
-    backgroundColor: "white",
-  },
-
-  imageView: {
-    width: "100%",
-    alignSelf: "center",
-    height: "auto",
-    aspectRatio: 1 / 1,
   },
   deleteModalView: {
     flex: 1,

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { getDatabase, set, onValue, update, push, ref as ref_db } from "firebase/database";
 import { getAuth } from "firebase/auth";
-import { StyleSheet, View, Text, SafeAreaView, TouchableOpacity, Dimensions, Image } from "react-native";
+import { StyleSheet, View, Text, SafeAreaView, TouchableOpacity, Dimensions, Image, Alert } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { createStackNavigator } from "@react-navigation/stack";
 import moment from "moment";
@@ -63,10 +63,8 @@ function TakePicture({ navigation }) {
 
   const selectPhoto = () => {
     let options = {
-      storageOptions: {
-        skipBackup: true,
-      },
       includeBase64: true,
+      quality: 0.01,
     };
 
     launchImageLibrary(options, (response) => {
@@ -75,7 +73,7 @@ function TakePicture({ navigation }) {
       } else if (response.error) {
         console.log("ImagePicker Error: ", response.error);
       } else {
-        console.log("response", JSON.stringify(response));
+        //console.log("response", JSON.stringify(response));
         //console.log(response.assets[0].uri.split("file://").pop());
 
         navigation.navigate("ViewPhoto", {
@@ -105,6 +103,7 @@ function TakePicture({ navigation }) {
         isActive={true}
         enableZoomGesture={true}
       />
+
       <TouchableOpacity onPress={takePhoto}>
         <Icon name="circle-slice-8" color="white" size={100} style={styles.captureButton} />
       </TouchableOpacity>
@@ -114,6 +113,9 @@ function TakePicture({ navigation }) {
       <TouchableOpacity onPress={selectPhoto}>
         <Icon name="upload" color="white" size={40} style={styles.leftButton} />
       </TouchableOpacity>
+      <View style={styles.upperLeft}>
+        <IconButton color="white" icon="close" onPress={() => navigation.goBack()} />
+      </View>
     </View>
   );
 }
@@ -124,7 +126,7 @@ function PhotoModal({ route, navigation }) {
   const { photoData, upload, photoBase64 } = route.params;
   const auth = getAuth();
   const user = auth.currentUser;
-  console.log(photoData.path);
+  //console.log(photoData.path);
 
   const uploadURL = async (url) => {
     const newKey = push(ref_db(db, "galleryAdmin"), {
@@ -136,6 +138,7 @@ function PhotoModal({ route, navigation }) {
   };
 
   const uploadPhoto = async () => {
+    console.log("uploading");
     //const url = photoData.path.replace("file://", "");
     let purl = `data:image/jpg;base64,${photoBase64}`;
     function urlToBlob(url) {
@@ -154,15 +157,17 @@ function PhotoModal({ route, navigation }) {
     }
 
     if (upload) {
+      navigation.navigate("Gallery");
       urlToBlob(purl.replace(/[^\x00-\x7F]/g, "")).then((blob) => {
         uploadBytes(ref_st(storage, "gallery" + uuid.v4()), blob).then((snapshot) => {
           getDownloadURL(snapshot.ref).then((url) => {
             uploadURL(url);
           });
-          navigation.navigate("Gallery");
         });
       });
     } else {
+      navigation.navigate("Gallery");
+
       const response = await fetch(photoData.path);
       const blob = await response.blob();
       uploadBytes(ref_st(storage, "gallery" + uuid.v4()), blob).then((snapshot) => {
@@ -170,13 +175,12 @@ function PhotoModal({ route, navigation }) {
           uploadURL(url);
         });
         // console.log(x)
-        navigation.navigate("Gallery");
       });
     }
   };
 
   return (
-    <View>
+    <View style={{ backgroundColor: "black" }}>
       <Image
         resizeMode="contain"
         source={{ uri: "file://" + photoData.path }}
@@ -187,7 +191,7 @@ function PhotoModal({ route, navigation }) {
       </View>
       <Button
         onPress={uploadPhoto}
-        style={{ margin: 15, borderRadius: 20, alignSelf: "center", paddingHorizontal: 20 }}
+        style={{ margin: 30, borderRadius: 20, alignSelf: "center", paddingHorizontal: 20 }}
         dark={true}
         icon="navigation"
         color="#F37121"
@@ -223,7 +227,7 @@ const styles = StyleSheet.create({
     top: Dimensions.get("window").height - 165,
   },
   upperLeft: {
-    top: 50,
+    top: -40,
     left: 15,
   },
   rightButton: {

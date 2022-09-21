@@ -6,13 +6,15 @@ import * as Font from "expo-font";
 import { MontserratFont } from "../assets/fonts";
 import { getDatabase, get, onValue, update, ref } from "firebase/database";
 import Carousel, { Pagination } from "react-native-snap-carousel";
+import { ExpandableCalendar, CalendarProvider, WeekCalendar } from "react-native-calendars";
 
+import moment from "moment";
 export default function AnnouncementModal() {
   const [visible, setVisible] = useState(false);
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [events, setEvents] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
-
+  const [weekEvent, setWeekEvent] = useState([]);
   const r = useRef(null);
   const db = getDatabase();
   async function loadFont() {
@@ -20,16 +22,17 @@ export default function AnnouncementModal() {
     setFontsLoaded(true);
   }
   useEffect(() => {
-    onValue(ref(db, "events/" + new Date().toISOString().slice(0, 10)), (snapshot) => {
+    onValue(ref(db, "events/" + moment().format().slice(0, 10)), (snapshot) => {
       if (snapshot.exists()) {
         setEvents(snapshot.val());
       } else {
         setEvents([
           {
-            title: "No Events for Today",
-            time: "Have a nice day!",
+            title: "Practice Starts",
+            time: "3:00 PM",
             location: "Lake Forest Academy",
-            facility: "Why not visit Crown?",
+            facility: "Sports facilities",
+            type: "No Events for Today",
           },
         ]);
       }
@@ -38,32 +41,56 @@ export default function AnnouncementModal() {
   }, []);
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
+
+  function getEvents(day) {
+    onValue(ref(db, "events/" + day), (snapshot) => {
+      if (snapshot.exists()) {
+        setWeekEvent(snapshot.val());
+      } else {
+        setWeekEvent([{ title: "", time: "", location: "", facility: "", type: "No Events" }]);
+      }
+    });
+  }
+
   const containerStyle = {
     backgroundColor: "white",
-    padding: 15,
     width: width - 30,
-    marginLeft: 15,
     borderRadius: 8,
+    marginVertical: 60,
+    flex: 1,
+    marginLeft: 15,
   };
-
+  const onDateChanged = useCallback((date) => {
+    getEvents(date);
+  }, []);
   const renderItem = useCallback(({ item, index }) => {
     return (
       <TouchableOpacity onPress={() => setVisible(true)}>
-        <View style={styles.announcementView}>
-          <Text style={styles.announcementTitle}>{item.title}</Text>
-          <View style={styles.infoContainer}>
-            <Image style={styles.infoIcon} source={require("../assets/icons8-location-24.png")} />
-            <Text style={styles.infoText}>{item.location}</Text>
+        {item.type == "No Events for Today" ? (
+          <View style={styles.announcementView}>
+            <Text style={styles.announcementTitle}>{item.type}</Text>
           </View>
-          <View style={styles.infoContainer}>
-            <Image style={styles.infoIcon} source={require("../assets/icons8-clock-48.png")} />
-            <Text style={styles.infoText}>{item.time}</Text>
+        ) : (
+          <View style={styles.announcementView}>
+            <Text style={styles.announcementTitle}>{item.type}</Text>
+            <View style={styles.infoContainer}>
+              <Image style={styles.infoIcon} source={require("../assets/icons8-head-to-head-48.png")} />
+              <Text style={styles.infoText}>{item.title}</Text>
+            </View>
+            <View style={styles.infoContainer}>
+              <Image style={styles.infoIcon} source={require("../assets/icons8-location-48.png")} />
+              <Text style={styles.infoText}>{item.location}</Text>
+            </View>
+            <View style={styles.infoContainer}>
+              <Image style={styles.infoIcon} source={require("../assets/icons8-clock-48.png")} />
+              <Text style={styles.infoText}>{item.time}</Text>
+            </View>
+            <View style={styles.infoContainer}>
+              <Image style={styles.infoIcon} source={require("../assets/icons8-map-pin-48.png")} />
+              <Text style={styles.infoText}>{item.facility}</Text>
+            </View>
           </View>
-          <View style={styles.infoContainer}>
-            <Image style={styles.infoIcon} source={require("../assets/icons8-map-pin-48.png")} />
-            <Text style={styles.infoText}>{item.facility}</Text>
-          </View>
-        </View>
+        )}
       </TouchableOpacity>
     );
   }, []);
@@ -75,24 +102,53 @@ export default function AnnouncementModal() {
       <View>
         <Portal>
           <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={containerStyle}>
-            <ScrollView>
-              {events.map((event, index) => (
-                <View key={index} style={styles.modalView}>
-                  <Text style={styles.modalTitle}>{event.title}</Text>
-                  <View style={styles.modalContainer}>
-                    <Image style={styles.modalIcon} source={require("../assets/icons8-location-24.png")} />
-                    <Text style={styles.modalText}>{event.location}</Text>
-                  </View>
-                  <View style={styles.modalContainer}>
-                    <Image style={styles.modalIcon} source={require("../assets/icons8-clock-48.png")} />
-                    <Text style={styles.modalText}>{event.time}</Text>
-                  </View>
-                  <View style={styles.modalContainer}>
-                    <Image style={styles.modalIcon} source={require("../assets/icons8-map-pin-48.png")} />
-                    <Text style={styles.modalText}>{event.facility}</Text>
-                  </View>
+            <View style={{ flex: 1 }}>
+              <CalendarProvider date={moment().format().slice(0, 10)} onDateChanged={onDateChanged} disabledOpacity={0.6}>
+                <ExpandableCalendar
+                  style={{ margin: 10 }}
+                  theme={{
+                    todayTextColor: "#F37121",
+                    arrowColor: "#F37121",
+                    selectedDayBackgroundColor: "#F37121",
+                  }}
+                  staticHeader={true}
+                  testID="weekCalendar"
+                  disablePan={true}
+                  initialPosition="closed"
+                  disableWeekScroll={true}
+                  hideKnob={true}
+                  hideArrows={true}
+                />
+              </CalendarProvider>
+            </View>
+            <ScrollView style={{ flex: 1, marginTop: -375 }}>
+              {weekEvent[0]?.type == "No Events" ? (
+                <View style={styles.modalView}>
+                  <Text style={styles.modalTitle}>{weekEvent[0]?.type}</Text>
                 </View>
-              ))}
+              ) : (
+                weekEvent.map((event, index) => (
+                  <View key={index} style={styles.modalView}>
+                    <Text style={styles.modalTitle}>{event.type}</Text>
+                    <View style={styles.modalContainer}>
+                      <Image style={styles.modalIcon} source={require("../assets/icons8-head-to-head-48.png")} />
+                      <Text style={styles.modalText}>{event.title}</Text>
+                    </View>
+                    <View style={styles.modalContainer}>
+                      <Image style={styles.modalIcon} source={require("../assets/icons8-location-48.png")} />
+                      <Text style={styles.modalText}>{event.location}</Text>
+                    </View>
+                    <View style={styles.modalContainer}>
+                      <Image style={styles.modalIcon} source={require("../assets/icons8-clock-48.png")} />
+                      <Text style={styles.modalText}>{event.time}</Text>
+                    </View>
+                    <View style={styles.modalContainer}>
+                      <Image style={styles.modalIcon} source={require("../assets/icons8-map-pin-48.png")} />
+                      <Text style={styles.modalText}>{event.facility}</Text>
+                    </View>
+                  </View>
+                ))
+              )}
             </ScrollView>
           </Modal>
         </Portal>
@@ -102,7 +158,6 @@ export default function AnnouncementModal() {
             data={events}
             renderItem={renderItem}
             sliderWidth={500}
-            loop={true}
             itemWidth={500}
             layout={"default"}
             onSnapToItem={(index) => setActiveIndex(index)}
@@ -189,15 +244,18 @@ const styles = StyleSheet.create({
     height: 150,
     borderRadius: 10,
     justifyContent: "space-around",
-    padding: 10,
-    borderWidth: 0.5,
-    marginVertical: 5,
+    padding: 15,
+    margin: 10,
+    backgroundColor: "#F7EFEF",
+    shadowColor: "#877F7F",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 2,
   },
 
   modalContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginLeft: 25,
   },
 
   modalIcon: {
@@ -207,13 +265,13 @@ const styles = StyleSheet.create({
   },
 
   modalText: {
-    fontFamily: "Montserrat-Bold",
+    fontFamily: "Montserrat-SemiBold",
     fontSize: 12,
     marginLeft: 10,
   },
   modalTitle: {
     fontFamily: "Montserrat-Bold",
     fontSize: 16,
-    marginLeft: 15,
+    color: "#F37121",
   },
 });

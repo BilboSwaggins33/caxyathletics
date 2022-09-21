@@ -13,7 +13,7 @@ import { firebaseConfig } from "./config";
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { ActivityIndicator } from "react-native-paper";
-import { setPoints, setRewardInfo, setUser } from "./redux/actions";
+import { setPoints, setUser } from "./redux/actions";
 import { useDispatch, useSelector } from "react-redux";
 import { getDatabase, ref, get } from "firebase/database";
 import { getMessaging, getToken } from "firebase/messaging";
@@ -34,7 +34,6 @@ export default function App() {
         get(ref(db, "users/" + u.uid)).then((snapshot) => {
           //console.log(snapshot.val().points);
           dispatch(setPoints(snapshot.val().points, 0));
-          dispatch(setRewardInfo(snapshot.val().redeemedPrizes));
           //console.log(snapshot.val().redeemedPrizes);
         });
         //console.log(user.email)

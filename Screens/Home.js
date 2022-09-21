@@ -22,7 +22,7 @@ import { MontserratFont } from "../assets/fonts";
 import LoadingScreen from "./Loading";
 import { Button } from "react-native-paper";
 import { useSelector, useDispatch } from "react-redux";
-
+import moment from "moment";
 export default function Home({ navigation }) {
   const [eventClicked, setEventClicked] = useState(false);
   const [fontsLoaded, setFontsLoaded] = useState(false);
@@ -67,7 +67,7 @@ export default function Home({ navigation }) {
                   navigation.navigate("Admin");
                 }}
                 uppercase={false}
-                style={{ backgroundColor: "#F37121" }}
+                style={{ backgroundColor: "#F37121", marginBottom: 10 }}
                 labelStyle={{ fontFamily: "Montserrat-Bold" }}
                 mode="contained"
               >
@@ -77,10 +77,13 @@ export default function Home({ navigation }) {
           ) : (
             <View></View>
           )}
+          <Text style={{ fontSize: 20, fontFamily: "Montserrat-Bold", color: "#3E3939", marginLeft: 20 }}>
+            {moment().format("dddd, MMMM Do")}
+          </Text>
           <View style={styles.sectionContainer}>
             <View style={styles.headerContainer}>
               <Image style={styles.headerIcon} source={require("../assets/icons8-megaphone-48.png")} />
-              <Text style={styles.headerText}>Events</Text>
+              <Text style={styles.headerText}>Today's Events</Text>
             </View>
             <AnnouncementModal />
           </View>

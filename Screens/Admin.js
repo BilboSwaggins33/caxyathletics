@@ -5,7 +5,10 @@ import { createStackNavigator } from "@react-navigation/stack";
 import * as Font from "expo-font";
 import { MontserratFont } from "../assets/fonts";
 import ApprovePictures from "./ApprovePictures";
+import ApproveRewards from "./ApproveRewards";
 import EditEvents from "./EditEvents";
+import EditPoints from "./EditPoints";
+
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 
 const Stack = createStackNavigator();
@@ -14,7 +17,9 @@ export default function AdminStack({ navigation, route }) {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="AdminComponent" component={Admin} />
       <Stack.Screen name="ApprovePictures" component={ApprovePictures} />
+      <Stack.Screen name="ApproveRewards" component={ApproveRewards} />
       <Stack.Screen name="EditEvents" component={EditEvents} />
+      <Stack.Screen name="EditPoints" component={EditPoints} />
     </Stack.Navigator>
   );
 }
@@ -44,7 +49,7 @@ function Admin({ navigation, route }) {
           />
           <Text style={styles.caxyAthleticsTxt}>Admin</Text>
         </View>
-        <ScrollView>
+        <View style={{ alignItems: "center" }}>
           <Button
             onPress={() => {
               navigation.navigate("ApprovePictures");
@@ -59,6 +64,18 @@ function Admin({ navigation, route }) {
           </Button>
           <Button
             onPress={() => {
+              navigation.navigate("ApproveRewards");
+            }}
+            uppercase={false}
+            icon="trophy"
+            style={{ backgroundColor: "#F37121", width: 250, margin: 20 }}
+            labelStyle={{ fontFamily: "Montserrat-Bold" }}
+            mode="contained"
+          >
+            Approve Rewards
+          </Button>
+          <Button
+            onPress={() => {
               navigation.navigate("EditEvents");
             }}
             uppercase={false}
@@ -69,7 +86,19 @@ function Admin({ navigation, route }) {
           >
             Edit Events
           </Button>
-        </ScrollView>
+          <Button
+            onPress={() => {
+              navigation.navigate("EditPoints");
+            }}
+            uppercase={false}
+            icon="hand-coin"
+            style={{ backgroundColor: "#F37121", width: 250, margin: 20 }}
+            labelStyle={{ fontFamily: "Montserrat-Bold" }}
+            mode="contained"
+          >
+            Edit Points
+          </Button>
+        </View>
       </SafeAreaView>
     );
   }

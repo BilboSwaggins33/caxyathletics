@@ -1,20 +1,11 @@
 import React, { useEffect, useState, useCallback } from "react";
-import {
-  StyleSheet,
-  View,
-  Text,
-  Image,
-  Animated,
-  FlatList,
-  SafeAreaView,
-  StatusBar
-} from "react-native";
+import { StyleSheet, View, Text, Image, Animated, FlatList, SafeAreaView, StatusBar } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useCollapsibleHeader } from "react-navigation-collapsible";
 import { useSelector } from "react-redux";
 import { getDatabase, ref, set, onValue, update } from "firebase/database";
-import * as Font from 'expo-font';
+import * as Font from "expo-font";
 import { MontserratFont } from "../assets/fonts";
 //import { StatusBar } from "expo-status-bar";
 
@@ -22,42 +13,35 @@ export default function Header() {
   const { points } = useSelector((state) => state.userReducer);
   const [fontsLoaded, setFontsLoaded] = useState(false);
 
-  const { onScroll, containerPaddingTop, scrollIndicatorInsetTop, translateY } =
-    useCollapsibleHeader({
-      navigationOptions: {
-        headerStyle: {
-          backgroundColor: "#F6F4F4",
-        },
+  const { onScroll, containerPaddingTop, scrollIndicatorInsetTop, translateY } = useCollapsibleHeader({
+    navigationOptions: {
+      headerStyle: {
+        backgroundColor: "#F6F4F4",
       },
-    });
+    },
+  });
 
   const stickyHeaderHeight = 64;
 
   async function loadFont() {
     await Font.loadAsync(MontserratFont);
-    setFontsLoaded(true)
+    setFontsLoaded(true);
   }
 
   useEffect(() => {
-    loadFont()
-  }, [])
+    loadFont();
+  }, []);
 
   // const db = getDatabase();
   // const ref = db.ref("users");
   if (!fontsLoaded) {
-    return null
+    return null;
   } else {
     return (
       <View style={styles.headerContainer}>
-        <StatusBar
-          animated={true}
-          barStyle={'dark-content'}
-        />
+        <StatusBar animated={true} barStyle={"dark-content"} />
         <View style={styles.leftContainer}>
-          <Image
-            style={styles.caxyLogo}
-            source={require("../assets/LFA_interlocking_logo_F2.png")}
-          />
+          <Image style={styles.caxyLogo} source={require("../assets/LFA_interlocking_logo_F2.png")} />
           <Text style={styles.caxyAthleticsTxt}>Caxy Athletics</Text>
         </View>
         <TouchableOpacity>

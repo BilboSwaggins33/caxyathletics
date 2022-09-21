@@ -55,7 +55,8 @@
     "react-navigation-collapsible": "^6.3.0",
     "react-redux": "^8.0.2",
     "redux": "^4.2.0",
-    "redux-thunk": "^2.4.1"
+    "redux-thunk": "^2.4.1",
+    "selenium-webdriver": "^4.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9"
