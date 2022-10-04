@@ -6,6 +6,7 @@ import { getAuth, GoogleAuthProvider, signInWithCredential, signOut } from "fire
 import * as WebBrowser from "expo-web-browser";
 import { Button } from "react-native-paper";
 import * as Font from "expo-font";
+import moment from "moment";
 import { MontserratFont } from "../assets/fonts";
 import { rewardsList } from "../Data/rewards";
 
@@ -52,6 +53,7 @@ export default function Login() {
                 profileUrl: result.user.photoURL,
                 points: 0,
                 redeemedPrizes: Array(rewardsList.length).fill(false),
+                Resets: { [moment()]: 0 },
               });
             }
           });

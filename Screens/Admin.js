@@ -8,7 +8,8 @@ import ApprovePictures from "./ApprovePictures";
 import ApproveRewards from "./ApproveRewards";
 import EditEvents from "./EditEvents";
 import EditPoints from "./EditPoints";
-
+import EditRewards from "./EditRewards";
+import EventHistory from "./EventHistory";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 
 const Stack = createStackNavigator();
@@ -20,6 +21,8 @@ export default function AdminStack({ navigation, route }) {
       <Stack.Screen name="ApproveRewards" component={ApproveRewards} />
       <Stack.Screen name="EditEvents" component={EditEvents} />
       <Stack.Screen name="EditPoints" component={EditPoints} />
+      <Stack.Screen name="EditRewards" component={EditRewards} />
+      <Stack.Screen name="EventHistory" component={EventHistory} />
     </Stack.Navigator>
   );
 }
@@ -97,6 +100,30 @@ function Admin({ navigation, route }) {
             mode="contained"
           >
             Edit Points
+          </Button>
+          <Button
+            onPress={() => {
+              navigation.navigate("EventHistory");
+            }}
+            uppercase={false}
+            icon="history"
+            style={{ backgroundColor: "#F37121", width: 250, margin: 20 }}
+            labelStyle={{ fontFamily: "Montserrat-Bold" }}
+            mode="contained"
+          >
+            Event History
+          </Button>
+          <Button
+            onPress={() => {
+              navigation.navigate("EditRewards");
+            }}
+            uppercase={false}
+            icon="medal"
+            style={{ backgroundColor: "#F37121", width: 250, margin: 20 }}
+            labelStyle={{ fontFamily: "Montserrat-Bold" }}
+            mode="contained"
+          >
+            Edit Rewards
           </Button>
         </View>
       </SafeAreaView>

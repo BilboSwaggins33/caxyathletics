@@ -64,7 +64,7 @@ function TakePicture({ navigation }) {
   const selectPhoto = () => {
     let options = {
       includeBase64: true,
-      quality: 0.01,
+      quality: 0.001,
     };
 
     launchImageLibrary(options, (response) => {
@@ -159,7 +159,7 @@ function PhotoModal({ route, navigation }) {
     if (upload) {
       navigation.navigate("Gallery");
       urlToBlob(purl.replace(/[^\x00-\x7F]/g, "")).then((blob) => {
-        uploadBytes(ref_st(storage, "gallery" + uuid.v4()), blob).then((snapshot) => {
+        uploadBytes(ref_st(storage, "gallery/" + uuid.v4()), blob).then((snapshot) => {
           getDownloadURL(snapshot.ref).then((url) => {
             uploadURL(url);
           });

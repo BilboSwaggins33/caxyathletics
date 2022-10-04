@@ -23,7 +23,9 @@ export default function EventView(props) {
           </View>
         ) : (
           <View>
-            <Text style={styles.gameTitle}>{props.title}</Text>
+            <Text style={styles.gameTitle} numberOfLines={6} adjustsFontSizeToFit={true}>
+              {props.title}
+            </Text>
             <Text style={styles.specialEvent}>{props.type}</Text>
             <View style={styles.vsContainer}>
               <Image style={styles.teamIcon} source={require("../assets/LFA_interlocking_logo_F2.png")} />

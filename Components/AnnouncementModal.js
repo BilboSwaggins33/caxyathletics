@@ -68,14 +68,18 @@ export default function AnnouncementModal() {
       <TouchableOpacity onPress={() => setVisible(true)}>
         {item.type == "No Events for Today" ? (
           <View style={styles.announcementView}>
-            <Text style={styles.announcementTitle}>{item.type}</Text>
+            <View style={{ alignItems: "center" }}>
+              <Text style={{ fontFamily: "Montserrat-Bold", color: "white", fontSize: 16 }}>{item.type}</Text>
+            </View>
           </View>
         ) : (
           <View style={styles.announcementView}>
             <Text style={styles.announcementTitle}>{item.type}</Text>
             <View style={styles.infoContainer}>
               <Image style={styles.infoIcon} source={require("../assets/icons8-head-to-head-48.png")} />
-              <Text style={styles.infoText}>{item.title}</Text>
+              <Text numberOfLines={2} style={styles.infoText}>
+                {item.title}
+              </Text>
             </View>
             <View style={styles.infoContainer}>
               <Image style={styles.infoIcon} source={require("../assets/icons8-location-48.png")} />
@@ -124,7 +128,9 @@ export default function AnnouncementModal() {
             <ScrollView style={{ flex: 1, marginTop: -375 }}>
               {weekEvent[0]?.type == "No Events" ? (
                 <View style={styles.modalView}>
-                  <Text style={styles.modalTitle}>{weekEvent[0]?.type}</Text>
+                  <View style={{ alignItems: "center" }}>
+                    <Text style={styles.modalTitle}>{weekEvent[0]?.type}</Text>
+                  </View>
                 </View>
               ) : (
                 weekEvent.map((event, index) => (
@@ -132,7 +138,9 @@ export default function AnnouncementModal() {
                     <Text style={styles.modalTitle}>{event.type}</Text>
                     <View style={styles.modalContainer}>
                       <Image style={styles.modalIcon} source={require("../assets/icons8-head-to-head-48.png")} />
-                      <Text style={styles.modalText}>{event.title}</Text>
+                      <Text numberOfLines={2} style={styles.modalText}>
+                        {event.title}
+                      </Text>
                     </View>
                     <View style={styles.modalContainer}>
                       <Image style={styles.modalIcon} source={require("../assets/icons8-location-48.png")} />
@@ -219,13 +227,12 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat-Bold",
     color: "white",
     fontSize: 16,
-    marginLeft: 15,
+    marginLeft: 10,
   },
 
   infoContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginLeft: 15,
   },
 
   infoIcon: {
@@ -238,7 +245,7 @@ const styles = StyleSheet.create({
     color: "white",
     fontFamily: "Montserrat-Bold",
     fontSize: 12,
-    marginLeft: 10,
+    margin: 5,
   },
   modalView: {
     height: 150,

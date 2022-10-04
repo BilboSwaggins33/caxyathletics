@@ -64,9 +64,12 @@ export default function CheckIn() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [enabled, setEnabled] = useState(false);
   const [location, setLocation] = useState("");
+  const [housePoints, setHousePoints] = useState({});
   const r = useRef(null);
   const maxPoints = 1000;
   const user = auth.currentUser;
+  const houses = { 23: "Bird", 24: "Sargent", 25: "Welch", 26: "Lewis" };
+
   async function loadFont() {
     await Font.loadAsync(MontserratFont);
     setFontsLoaded(true);
@@ -105,6 +108,9 @@ export default function CheckIn() {
             },
           ]);
         }
+      });
+      onValue(ref(db, "house/"), (snapshot) => {
+        setHousePoints(snapshot.val());
       });
       if (events.length != 0) {
         checkOpponents(events);
@@ -335,6 +341,11 @@ export default function CheckIn() {
 
   function updatePoints(n) {
     let total = points + n;
+    if (events[activeIndex].type == "Pack the House") {
+      update(ref(db, "house/" + houses[user.displayName.slice(-2)]), {
+        points: housePoints[houses[user.displayName.slice(-2)]]?.points + n,
+      });
+    }
     if (total < maxPoints) {
       update(ref(db, "users/" + user.uid), {
         points: total,

@@ -16,7 +16,6 @@ import { rewardsList } from "../Data/rewards";
 import { MontserratFont } from "../assets/fonts";
 import * as Font from "expo-font";
 import LinearGradient from "react-native-linear-gradient";
-
 const Stack = createStackNavigator();
 
 export default function RewardsStackScreen({ navigation, route }) {
@@ -50,6 +49,8 @@ export default function RewardsStackScreen({ navigation, route }) {
 function Rewards({ navigation }) {
   const [pointsLeft, setPointsLeft] = useState();
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [housePoints, setHousePoints] = useState({});
+  const [rewards, setRewards] = useState([]);
   const { points } = useSelector((state) => state.userReducer);
   const dispatch = useDispatch();
   const db = getDatabase();
@@ -67,6 +68,13 @@ function Rewards({ navigation }) {
   }
   useEffect(() => {
     //resetAll();
+    onValue(ref(db, "house/"), (snapshot) => {
+      setHousePoints(snapshot.val());
+    });
+    onValue(ref(db, "rewards/"), (snapshot) => {
+      setRewards(snapshot.val());
+      //console.log(snapshot.val());
+    });
     loadFont();
   }, []);
 
@@ -81,9 +89,6 @@ function Rewards({ navigation }) {
   }, [points]);
 
   function updatePoints(n) {
-    update(ref(db, "house/" + houses[user.displayName.slice(-2)]), {
-      points: n,
-    });
     update(ref(db, "users/" + user.uid), {
       points: n,
     }).then(() => {
@@ -94,7 +99,7 @@ function Rewards({ navigation }) {
   function resetAll() {
     dispatch(resetPoints(0));
     updatePoints(0);
-    update(ref(db, "users/" + user.uid + "/"), { redeemedPrizes: Array(rewardsList.length).fill(false) });
+    update(ref(db, "users/" + user.uid + "/"), { redeemedPrizes: Array(rewards.length).fill(false) });
   }
 
   function changePoints(n) {
@@ -103,6 +108,9 @@ function Rewards({ navigation }) {
     if (total < maxPoints) {
       //console.log(total);
       updatePoints(total);
+      update(ref(db, "house/" + houses[user.displayName.slice(-2)]), {
+        points: housePoints[houses[user.displayName.slice(-2)]]?.points + n,
+      });
       dispatch(setPoints(points, n));
     } else {
       updatePoints(maxPoints);
@@ -183,6 +191,7 @@ function RedeemModal({ navigation }) {
   const [rewardInfo, setRewardInfo] = useState({});
   const [redeemedInfo, setRedeemedInfo] = useState([]);
   const [visible, setVisible] = useState(false);
+  const [rewards, setRewards] = useState([]);
   const db = getDatabase();
   const auth = getAuth();
   const user = auth.currentUser;
@@ -192,6 +201,10 @@ function RedeemModal({ navigation }) {
   useEffect(() => {
     onValue(ref(db, "users/" + user.uid), (snapshot) => {
       setRedeemedInfo(snapshot.val().redeemedPrizes);
+    });
+    onValue(ref(db, "rewards/"), (snapshot) => {
+      setRewards(snapshot.val());
+      //console.log(snapshot.val());
     });
   }, []);
   function Separator() {
@@ -211,7 +224,7 @@ function RedeemModal({ navigation }) {
   return (
     <View>
       <View style={styles.modalHeaderContainer}>
-        <IconButton icon="arrow-left" onPress={() => navigation.goBack()} />
+        <IconButton icon="close" onPress={() => navigation.goBack()} />
         <Text style={styles.modalHeaderText}>Rewards</Text>
         <Text></Text>
       </View>
@@ -224,22 +237,28 @@ function RedeemModal({ navigation }) {
             <View style={styles.rewardInfoContainer}>
               <Text style={styles.rewardName}>{rewardInfo.name}</Text>
               <Text style={styles.rewardDescription}>{rewardInfo.description}</Text>
-              <Image style={styles.rewardsImage} source={rewardInfo.image} resizeMode={"contain"} />
+              <Image style={styles.rewardsImage} source={{uri: rewardInfo.image}} resizeMode={"contain"} />
               <Text style={styles.rewardsPoints}>Redeem at {rewardInfo?.points} points</Text>
               {points >= rewardInfo.points && !redeemedInfo[rewardInfo.id - 1] ? (
                 <View style={styles.buttonContainer}>
                   <TouchableOpacity
                     onPress={() => {
-                      Alert.alert("Prize Claimed!");
                       setVisible(false);
                       const updates = {};
                       updates[rewardInfo.id - 1] = "pending";
                       update(ref(db, "users/" + user.uid + "/redeemedPrizes/"), updates);
                     }}
                   >
-                    <View style={styles.redeemButton}>
-                      <Text style={styles.redeemBtnText}>Claim</Text>
-                    </View>
+                    <LinearGradient
+                      style={styles.linearGradient}
+                      colors={["#fc9d62", "#f78460", "#F37121"]}
+                      start={{ x: 0.0, y: 0.25 }}
+                      end={{ x: 0.5, y: 1.0 }}
+                    >
+                      <View style={styles.redeemButton}>
+                        <Text style={styles.redeemBtnText}>Claim</Text>
+                      </View>
+                    </LinearGradient>
                   </TouchableOpacity>
                 </View>
               ) : points < rewardInfo.points && !redeemedInfo[rewardInfo.id - 1] ? (
@@ -256,13 +275,29 @@ function RedeemModal({ navigation }) {
         </Modal>
       </Portal>
       <View style={styles.modalRewardsContainer}>
+        <View style={{ marginHorizontal: 15, marginBottom: 20, flexDirection: "row", alignItems: "center" }}>
+          <Text style={{ fontFamily: "Montserrat-Bold", fontSize: 20, marginRight: 20 }}>Current Points :</Text>
+          <LinearGradient
+            style={styles.linearGradient}
+            colors={["#F37121", "#f78460", "#fc9d62"]}
+            start={{ x: 0.0, y: 0.25 }}
+            end={{ x: 0.5, y: 1.0 }}
+          >
+            <View style={{ alignItems: "center", padding: 10, paddingHorizontal: 40 }}>
+              <Text style={{ fontFamily: "Montserrat-Bold", fontSize: 20, color: "white" }}>{points}</Text>
+            </View>
+          </LinearGradient>
+        </View>
         <FlatList
-          contentContainerStyle={{ paddingBottom: 200 }}
-          data={rewardsList}
+          contentContainerStyle={{ paddingBottom: 300 }}
+          data={rewards}
           keyExtractor={(item) => item.id.toString()}
           ItemSeparatorComponent={() => Separator()}
           renderItem={({ item, index }) => {
             if (!redeemedInfo[index] && points < item.points) {
+              /*
+               Not Enough Points
+              */
               return (
                 <TouchableOpacity
                   onPress={() => {
@@ -270,7 +305,51 @@ function RedeemModal({ navigation }) {
                     setVisible(true);
                   }}
                 >
-                  <View style={{ marginHorizontal: 20 }}>
+                  <View style={{ marginHorizontal: 15 }}>
+                    <View
+                      style={{
+                        height: 120,
+                        borderRadius: 10,
+                        padding: 30,
+                        flexDirection: "row",
+                        flex: 1,
+                        backgroundColor: "white",
+                      }}
+                    >
+                      <View style={{ justifyContent: "center", alignItems: "center", marginRight: 30 }}>
+                        <Text style={{ color: "black", fontFamily: "Montserrat-Bold", margin: 5 }}>{item.points}</Text>
+                        <Text style={{ color: "#525252", fontFamily: "Montserrat-Medium" }}>Points</Text>
+                      </View>
+                      <View style={{ justifyContent: "center" }}>
+                        <Text style={{ color: "black", fontFamily: "Montserrat-Bold", marginVertical: 5 }}>{item.name}</Text>
+                        <Text
+                          numberOfLines={2}
+                          style={{
+                            color: "gray",
+                            fontFamily: "Montserrat-Medium",
+                            flexWrap: "wrap",
+                            maxWidth: 200,
+                          }}
+                        >
+                          {item.description}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              );
+            } else if (!redeemedInfo[index] && points >= item.points) {
+              /*
+               Claimable Reward
+              */
+              return (
+                <TouchableOpacity
+                  onPress={() => {
+                    setRewardInfo(item);
+                    setVisible(true);
+                  }}
+                >
+                  <View style={{ marginHorizontal: 15 }}>
                     <LinearGradient
                       style={styles.linearGradient}
                       colors={["#F37121", "#F37121", "#F37121"]}
@@ -279,86 +358,22 @@ function RedeemModal({ navigation }) {
                     >
                       <View
                         style={{
-                          height: 150,
+                          height: 120,
                           borderRadius: 10,
-                          padding: 20,
-                          justifyContent: "space-between",
+                          padding: 30,
                           flexDirection: "row",
                           flex: 1,
                         }}
                       >
-                        <View style={{}}>
-                          <Text style={{ color: "white", fontFamily: "Montserrat-Bold", margin: 2 }}>{item.name}</Text>
-                          <Text
-                            numberOfLines={2}
-                            style={{
-                              color: "white",
-                              fontFamily: "Montserrat-Medium",
-                              margin: 2,
-                              flex: 1,
-                              flexWrap: "wrap",
-                              maxWidth: 200,
-                            }}
-                          >
-                            {item.description}
-                          </Text>
-                        </View>
-                        <View style={{ justifyContent: "center", alignItems: "center" }}>
+                        <View style={{ justifyContent: "center", alignItems: "center", marginRight: 30 }}>
                           <Text style={{ color: "white", fontFamily: "Montserrat-Bold", margin: 5 }}>{item.points}</Text>
-                          <Text style={{ color: "white", fontFamily: "Montserrat-Medium" }}>Points</Text>
+                          <Text style={{ color: "#f2f2f2", fontFamily: "Montserrat-Medium" }}>Points</Text>
                         </View>
-                      </View>
-                    </LinearGradient>
-                  </View>
-                </TouchableOpacity>
-              );
-            } else if (!redeemedInfo[index] && points >= item.points) {
-              return (
-                <TouchableOpacity
-                  onPress={() => {
-                    setRewardInfo(item);
-                    setVisible(true);
-                  }}
-                >
-                  <View style={{ marginHorizontal: 20 }}>
-                    <LinearGradient
-                      style={styles.linearGradient}
-                      colors={["#fc9d62", "#f37121", "#d95504"]}
-                      start={{ x: 0.0, y: 0.25 }}
-                      end={{ x: 0.5, y: 1.0 }}
-                    >
-                      <View
-                        style={{
-                          height: 150,
-                          borderRadius: 10,
-                          padding: 20,
-                          justifyContent: "space-between",
-                          flexDirection: "row",
-                          flex: 1,
-                        }}
-                      >
-                        <View style={{}}>
-                          <Text style={{ color: "white", fontFamily: "Montserrat-Bold", margin: 2 }}>{item.name}</Text>
-                          <Text
-                            numberOfLines={2}
-                            style={{
-                              color: "white",
-                              fontFamily: "Montserrat-Medium",
-                              margin: 2,
-                              flex: 1,
-                              flexWrap: "wrap",
-                              maxWidth: 200,
-                            }}
-                          >
-                            {item.description}
-                          </Text>
-                          <Text style={{ color: "white", fontFamily: "Montserrat-Bold", margin: 2, fontSize: 18 }}>
+                        <View style={{ justifyContent: "center" }}>
+                          <Text style={{ color: "#f2f2f2", fontFamily: "Montserrat-SemiBold", marginVertical: 5 }}>
                             Claim Reward
                           </Text>
-                        </View>
-                        <View style={{ justifyContent: "center", alignItems: "center" }}>
-                          <Text style={{ color: "white", fontFamily: "Montserrat-Bold", margin: 5 }}>{item.points}</Text>
-                          <Text style={{ color: "white", fontFamily: "Montserrat-Medium" }}>Points</Text>
+                          <Text style={{ color: "white", fontFamily: "Montserrat-Bold" }}>{item.name}</Text>
                         </View>
                       </View>
                     </LinearGradient>
@@ -366,6 +381,9 @@ function RedeemModal({ navigation }) {
                 </TouchableOpacity>
               );
             } else if (redeemedInfo[index] == "pending" && points >= item.points) {
+              /*
+               Claimed and Pending
+              */
               return (
                 <TouchableOpacity
                   onPress={() => {
@@ -373,48 +391,32 @@ function RedeemModal({ navigation }) {
                     setVisible(true);
                   }}
                 >
-                  <View style={{ marginHorizontal: 20 }}>
+                  <View style={{ marginHorizontal: 15 }}>
                     <LinearGradient
                       style={styles.linearGradient}
-                      colors={["#fc9d62", "#f37121", "#d95504"]}
+                      colors={["#F37121", "#F37121", "#F37121"]}
                       start={{ x: 0.0, y: 0.25 }}
                       end={{ x: 0.5, y: 1.0 }}
                     >
                       <View
                         style={{
-                          height: 150,
+                          height: 120,
                           borderRadius: 10,
-                          padding: 20,
-                          justifyContent: "space-between",
+                          padding: 30,
                           flexDirection: "row",
                           flex: 1,
                         }}
                       >
-                        <View style={{}}>
-                          <Text style={{ color: "white", fontFamily: "Montserrat-Bold", margin: 2 }}>{item.name}</Text>
-                          <Text
-                            numberOfLines={2}
-                            style={{
-                              color: "white",
-                              fontFamily: "Montserrat-Medium",
-                              margin: 2,
-                              flex: 1,
-                              flexWrap: "wrap",
-                              maxWidth: 200,
-                            }}
-                          >
-                            {item.description}
-                          </Text>
-                          <Text style={{ color: "white", fontFamily: "Montserrat-Bold", margin: 2, fontSize: 15 }}>
-                            Pending...
-                          </Text>
-                          <Text style={{ color: "white", fontFamily: "Montserrat-Bold", margin: 2, fontSize: 10 }}>
-                            Visit Crown to grab your prize.
-                          </Text>
-                        </View>
-                        <View style={{ justifyContent: "center", alignItems: "center" }}>
+                        <View style={{ justifyContent: "center", alignItems: "center", marginRight: 30 }}>
                           <Text style={{ color: "white", fontFamily: "Montserrat-Bold", margin: 5 }}>{item.points}</Text>
-                          <Text style={{ color: "white", fontFamily: "Montserrat-Medium" }}>Points</Text>
+                          <Text style={{ color: "#f2f2f2", fontFamily: "Montserrat-Medium" }}>Points</Text>
+                        </View>
+                        <View style={{ justifyContent: "center" }}>
+                          <Text style={{ color: "white", fontFamily: "Montserrat-Bold" }}>Reward Pending...</Text>
+                          <Text style={{ color: "#f2f2f2", fontFamily: "Montserrat-Medium", marginVertical: 5, fontSize: 11 }}>
+                            Visit Crown and claim your reward.
+                          </Text>
+                          <Text style={{ color: "white", fontFamily: "Montserrat-SemiBold" }}>{item.name}</Text>
                         </View>
                       </View>
                     </LinearGradient>
@@ -422,6 +424,9 @@ function RedeemModal({ navigation }) {
                 </TouchableOpacity>
               );
             } else if (redeemedInfo[index] && points >= item.points) {
+              /*
+               Reward already redeemed
+              */
               return (
                 <TouchableOpacity
                   onPress={() => {
@@ -429,45 +434,41 @@ function RedeemModal({ navigation }) {
                     setVisible(true);
                   }}
                 >
-                  <View style={{ marginHorizontal: 20 }}>
+                  <View style={{ marginHorizontal: 15 }}>
                     <LinearGradient
                       style={styles.linearGradient}
-                      colors={["#ffddc2", "#ffb181", "#f9c594"]}
-                      start={{ x: 0.0, y: 0.5 }}
-                      end={{ x: 0.8, y: 1.0 }}
+                      colors={["#ffe2cc", "#ffe2cc", "#ffe2cc"]}
+                      start={{ x: 0.0, y: 0.25 }}
+                      end={{ x: 0.5, y: 1.0 }}
                     >
                       <View
                         style={{
-                          height: 150,
+                          height: 120,
                           borderRadius: 10,
-                          padding: 20,
-                          justifyContent: "space-between",
+                          padding: 30,
                           flexDirection: "row",
                           flex: 1,
                         }}
                       >
-                        <View style={{}}>
-                          <Text style={{ color: "#a95504", fontFamily: "Montserrat-Bold", margin: 2 }}>{item.name}</Text>
+                        <View style={{ justifyContent: "center", alignItems: "center", marginRight: 30 }}>
+                          <Text style={{ color: "#F37121", fontFamily: "Montserrat-Bold", margin: 5 }}>{item.points}</Text>
+                          <Text style={{ color: "#F37121", fontFamily: "Montserrat-Medium" }}>Points</Text>
+                        </View>
+                        <View style={{ justifyContent: "center" }}>
+                          <Text style={{ color: "#F37121", fontFamily: "Montserrat-Bold" }}>{item.name}</Text>
+                          <Text style={{ color: "#F37121", fontFamily: "Montserrat-Bold", marginVertical: 3 }}>Redeemed</Text>
                           <Text
                             numberOfLines={2}
                             style={{
-                              color: "#a95504",
+                              color: "#F37121",
                               fontFamily: "Montserrat-Medium",
-                              margin: 2,
-                              flex: 1,
                               flexWrap: "wrap",
                               maxWidth: 200,
+                              fontSize: 12,
                             }}
                           >
                             {item.description}
                           </Text>
-                          <Text style={{ color: "#a95504", fontFamily: "Montserrat-Bold", margin: 2, fontSize: 15 }}>
-                            Redeemed
-                          </Text>
-                        </View>
-                        <View style={{ justifyContent: "center", alignItems: "center" }}>
-                          <Text style={{ color: "#a95504", fontFamily: "Montserrat-Bold", margin: 5 }}>{item.points}</Text>
-                          <Text style={{ color: "#a95504", fontFamily: "Montserrat-Medium" }}>Points</Text>
                         </View>
                       </View>
                     </LinearGradient>
@@ -506,7 +507,7 @@ const styles = StyleSheet.create({
   rewardInfoModal: {
     width: width - 50,
     height: height - 300,
-    backgroundColor: "white",
+    backgroundColor: "rgb(252, 251, 255)",
     marginLeft: 25,
     borderRadius: 10,
     padding: 10,
@@ -524,10 +525,11 @@ const styles = StyleSheet.create({
 
   rewardDescription: {
     fontFamily: "Montserrat-Regular",
+    padding: 15,
   },
 
   rewardsPoints: {
-    fontFamily: "Montserrat-Bold",
+    fontFamily: "Montserrat-SemiBold",
     fontSize: 16,
     marginTop: 10,
   },
@@ -618,8 +620,6 @@ const styles = StyleSheet.create({
   },
 
   redeemButton: {
-    marginTop: 30,
-    backgroundColor: "#F37121",
     borderRadius: 10,
     width: 160,
     height: 50,
@@ -631,6 +631,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     alignItems: "center",
     justifyContent: "center",
+    marginTop: 30,
   },
 
   redeemBtnText: {
@@ -706,12 +707,12 @@ const styles = StyleSheet.create({
   },
 
   redeemBtn: {
-    height: 40,
+    height: 50,
     width: 200,
     backgroundColor: "#F37121",
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 5,
+    borderRadius: 15,
   },
 
   redeemText: {

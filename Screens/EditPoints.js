@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, View, Text, FlatList, SafeAreaView, ScrollView, Alert, Image } from "react-native";
-import { Button, IconButton, Modal, Portal, TextInput } from "react-native-paper";
+import { Button, Card, IconButton, Modal, Portal, TextInput } from "react-native-paper";
 import { createStackNavigator } from "@react-navigation/stack";
 import * as Font from "expo-font";
 import { MontserratFont } from "../assets/fonts";
-import { getDatabase, ref, set, onValue, update } from "firebase/database";
-
+import { getDatabase, ref, set, onValue, update, get, push } from "firebase/database";
+import moment from "moment";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 
@@ -15,6 +15,7 @@ export default function EditPoints({ navigation, route }) {
   const [visible, setVisible] = useState(false);
   const [house, setHouse] = useState("");
   const [points, setPoints] = useState("0");
+  const [resetHistory, setResetHistory] = useState({});
   const db = getDatabase();
 
   async function loadFont() {
@@ -23,9 +24,15 @@ export default function EditPoints({ navigation, route }) {
   }
 
   useEffect(() => {
+    onValue(ref(db, "resets/"), (snapshot) => {
+      if (snapshot.exists()) {
+        setResetHistory(snapshot.val());
+      }
+    });
     onValue(ref(db, "house/"), (snapshot) => {
       setHousePoints(snapshot.val());
     });
+
     loadFont();
   }, []);
 
@@ -37,14 +44,60 @@ export default function EditPoints({ navigation, route }) {
   ];
 
   const handleReset = () => {
-    Alert.alert("Are you sure?", "Resetting all the points will ", [
-      {
-        text: "Cancel",
-        onPress: () => console.log("Cancel Pressed"),
-        style: "cancel",
-      },
-      { text: "OK", onPress: () => console.log("OK Pressed") },
-    ]);
+    Alert.alert(
+      "Are you sure?",
+      "You won't be able to revert back. It's suggested you mark down each houses points just in case.",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel",
+        },
+        {
+          text: "OK",
+          onPress: () => {
+            get(ref(db, "users/")).then((snapshot) => {
+              var users = snapshot.val();
+              for (var user in users) {
+                if (!("Resets" in users[user])) {
+                  users[user]["Resets"] = [];
+                }
+                users[user]["Resets"].push({ [moment()]: users[user].points });
+                users[user].points = 0;
+              }
+              console.log(users);
+              update(ref(db, "users/"), users);
+              update(ref(db, "resets/" + moment().format("LLL").toString()), {
+                Welch: housePoints["Welch"].points,
+                Sargent: housePoints["Sargent"].points,
+                Bird: housePoints["Bird"].points,
+                Lewis: housePoints["Lewis"].points,
+              });
+              // const resetRef = ref(db, "resets");
+              // const newReset = push(resetRef);
+              // set(newReset, {
+              //   Welch: housePoints["Welch"].points,
+              //   Sargent: housePoints["Sargent"].points,
+              //   Bird: housePoints["Bird"].points,
+              //   Lewis: housePoints["Lewis"].points,
+              // });
+            });
+            update(ref(db, "house/Welch"), {
+              points: 0,
+            });
+            update(ref(db, "house/Bird"), {
+              points: 0,
+            });
+            update(ref(db, "house/Lewis"), {
+              points: 0,
+            });
+            update(ref(db, "house/Sargent"), {
+              points: 0,
+            });
+          },
+        },
+      ]
+    );
   };
 
   const handleChangePoints = () => {
@@ -52,7 +105,7 @@ export default function EditPoints({ navigation, route }) {
       update(ref(db, "house/" + house), {
         points: points,
       });
-      Alert.alert("Points saved." + house);
+      Alert.alert("Points saved for " + house);
     } else {
       Alert.alert("not a valid number.");
     }
@@ -106,6 +159,33 @@ export default function EditPoints({ navigation, route }) {
           >
             Reset All Points
           </Button>
+        </View>
+        <Text style={styles.caxyAthleticsTxt}>Reset History</Text>
+        <View style={{ margin: 20 }}>
+          <FlatList
+            data={Object.keys(resetHistory)}
+            renderItem={(r) => {
+              return (
+                <View style={{ marginVertical: 20 }}>
+                  <Text>{r["item"]}</Text>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                    <Text style={{ fontFamily: "Montserrat-Medium", margin: 5, color: "black" }}>
+                      Welch: {resetHistory[r["item"]]["Welch"]}
+                    </Text>
+                    <Text style={{ fontFamily: "Montserrat-Medium", margin: 5, color: "black" }}>
+                      Bird: {resetHistory[r["item"]]["Bird"]}
+                    </Text>
+                    <Text style={{ fontFamily: "Montserrat-Medium", margin: 5, color: "black" }}>
+                      Sargent: {resetHistory[r["item"]]["Sargent"]}
+                    </Text>
+                    <Text style={{ fontFamily: "Montserrat-Medium", margin: 5, color: "black" }}>
+                      Lewis: {resetHistory[r["item"]]["Lewis"]}
+                    </Text>
+                  </View>
+                </View>
+              );
+            }}
+          />
         </View>
         <Portal>
           <Modal visible={visible} dismissable={false} contentContainerStyle={{ backgroundColor: "white", padding: 20 }}>

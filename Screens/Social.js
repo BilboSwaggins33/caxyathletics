@@ -10,8 +10,10 @@ import { getDatabase, ref, set, onValue, update } from "firebase/database";
 import { useSelector, useDispatch } from "react-redux";
 import { Portal, Modal, IconButton } from "react-native-paper";
 import * as Font from "expo-font";
+import moment from "moment";
 import { MontserratFont } from "../assets/fonts";
 import { setUser } from "../redux/actions";
+import { ScrollView } from "react-native-gesture-handler";
 const Stack = createStackNavigator();
 
 export default function SocialStack({ navigation }) {
@@ -32,6 +34,8 @@ function Social({ navigation }) {
   const [currentUser, setCurrentUser] = useState([]);
   const [redeemedInfo, setRedeemedInfo] = useState([]);
   const [housePoints, setHousePoints] = useState({});
+  const [resetHistory, setResetHistory] = useState([]);
+  const [visible, setVisible] = useState(false);
   const { user } = useSelector((state) => state.userReducer);
   const dispatch = useDispatch();
   const db = getDatabase();
@@ -53,6 +57,8 @@ function Social({ navigation }) {
     loadFont();
     onValue(ref(db, "users/" + user.uid), (snapshot) => {
       setRedeemedInfo(snapshot.val().redeemedPrizes);
+      setResetHistory(snapshot.val().Resets);
+      console.log(snapshot.val());
     });
     onValue(ref(db, "house/"), (snapshot) => {
       setHousePoints(snapshot.val());
@@ -61,20 +67,22 @@ function Social({ navigation }) {
   }, [currentUser]);
 
   const SignOutButton = () => (
-    <Button
-      uppercase={false}
-      style={{ backgroundColor: "#F37121", marginVertical: 20 }}
-      labelStyle={{ fontFamily: "Montserrat-SemiBold" }}
-      mode="contained"
-      onPress={() => {
-        dispatch(setUser(null));
-        signOut(auth).then(() => {
-          console.log("sign out success");
-        });
-      }}
-    >
-      Sign Out
-    </Button>
+    <View style={{ alignItems: "center" }}>
+      <Button
+        uppercase={false}
+        style={{ backgroundColor: "#F37121", marginVertical: 20, width: 200 }}
+        labelStyle={{ fontFamily: "Montserrat-SemiBold" }}
+        mode="contained"
+        onPress={() => {
+          dispatch(setUser(null));
+          signOut(auth).then(() => {
+            console.log("sign out success");
+          });
+        }}
+      >
+        Sign Out
+      </Button>
+    </View>
   );
 
   if (!fontsLoaded) {
@@ -93,23 +101,38 @@ function Social({ navigation }) {
         <View style={styles.profileContainer}>
           <Image
             style={{
-              width: 100,
-              height: 100,
+              width: 60,
+              height: 60,
               borderRadius: 100,
+              marginTop: 20,
             }}
             source={{ uri: currentUser.photoURL }}
           />
-          <Text style={{ fontFamily: "Montserrat-Bold", fontSize: 20, marginVertical: 20 }}>{currentUser.displayName}</Text>
-          <Text style={{ fontFamily: "Montserrat-Medium", fontSize: 20, marginTop: 15 }}>{points} Points</Text>
-          <Text style={{ fontFamily: "Montserrat-Medium", fontSize: 20, marginTop: 5 }}>
-            {redeemedInfo.filter((x) => x == true).length}
-            {redeemedInfo.filter((x) => x == true).length == 1 ? " Reward Claimed" : " Rewards Claimed"}
+          <Text style={{ fontFamily: "Montserrat-Bold", fontSize: 20, marginTop: 10 }}>{currentUser.displayName}</Text>
+          <Text style={{ fontFamily: "Montserrat-Medium", fontSize: 12, marginBottom: 20, color: "gray" }}>
+            {currentUser.email}
           </Text>
-
-          <SignOutButton />
         </View>
         <View style={styles.headerContainer}>
           <Image style={styles.headerIcon} source={require("../assets/icons8-leaderboard-48.png")} />
+          <Text style={styles.headerText}>Stats</Text>
+        </View>
+        <TouchableOpacity
+          onPress={() => {
+            setVisible(true);
+          }}
+          style={styles.statsContainer}
+        >
+          <Text style={{ fontFamily: "Montserrat-SemiBold", fontSize: 16, marginTop: 5 }}>
+            {resetHistory.map((a) => Object.values(a)[0]).reduce((parSum, a) => parSum + a, 0) + points} Total Points
+          </Text>
+          <Text style={{ fontFamily: "Montserrat-SemiBold", fontSize: 16, marginTop: 5 }}>
+            {redeemedInfo.filter((x) => x == true).length}
+            {redeemedInfo.filter((x) => x == true).length == 1 ? " Total Reward Claimed" : " Total Rewards Claimed"}
+          </Text>
+        </TouchableOpacity>
+        <View style={styles.headerContainer}>
+          <Image style={styles.headerIcon} source={require("../assets/icons8-trophy-48.png")} />
           <Text style={styles.headerText}>Leaderboard</Text>
         </View>
         <TouchableOpacity onPress={() => navigation.navigate("Leaderboard")}>
@@ -130,6 +153,26 @@ function Social({ navigation }) {
             />
           </View>
         </TouchableOpacity>
+        <SignOutButton />
+        <Portal>
+          <Modal
+            visible={visible}
+            onDismiss={() => {
+              setVisible(false);
+            }}
+            contentContainerStyle={{ backgroundColor: "white", padding: 20, margin: 30, borderRadius: 8 }}
+          >
+            <ScrollView>
+              <Text style={{ color: "#F37121", fontFamily: "Montserrat-Bold", fontSize: 18 }}>Reset History</Text>
+              {resetHistory.map((item, i) => (
+                <View style={{ marginVertical: 20 }}>
+                  <Text>{moment(Object.keys(item)[0]).format("LLL")}</Text>
+                  <Text>Points: {Object.values(item)[0]}</Text>
+                </View>
+              ))}
+            </ScrollView>
+          </Modal>
+        </Portal>
       </SafeAreaView>
     );
   }
@@ -478,7 +521,7 @@ const styles = StyleSheet.create({
 
   profileContainer: {
     width: width - 50,
-    height: 380,
+    height: 175,
     backgroundColor: "white",
     borderRadius: 20,
     shadowColor: "rgba(0, 0, 0, 0.25)",
@@ -494,6 +537,19 @@ const styles = StyleSheet.create({
   leaderboardContainer: {
     width: width - 50,
     height: 150,
+    marginLeft: 25,
+    backgroundColor: "white",
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "rgba(0, 0, 0, 0.25)",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.7,
+    shadowRadius: 20,
+  },
+  statsContainer: {
+    width: width - 50,
+    height: 100,
     marginLeft: 25,
     backgroundColor: "white",
     borderRadius: 20,

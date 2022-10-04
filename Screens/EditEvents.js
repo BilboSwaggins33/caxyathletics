@@ -68,7 +68,16 @@ function EventCalendar({ navigation, route }) {
       if (snapshot.exists()) {
         setEvents(snapshot.val());
       } else {
-        setEvents([{ title: "No events for today", time: "", location: "Lake Forest Academy", facility: "", type: "" }]);
+        setEvents([
+          {
+            title: "No events for today",
+            time: "",
+            location: "Lake Forest Academy",
+            facility: "",
+            type: "",
+            points: { Welch: 0, Bird: 0, Sargent: 0, Lewis: 0 },
+          },
+        ]);
       }
     });
   }
@@ -260,6 +269,7 @@ function EventModal({ navigation, route }) {
                   events[i].querySelector(".fsLocation") == null ? "Away" : events[i].querySelector(".fsLocation").structuredText,
                 facility: "Crown",
                 type: "Event",
+                points: { Welch: 0, Bird: 0, Sargent: 0, Lewis: 0 },
               });
             }
           }
@@ -278,6 +288,7 @@ function EventModal({ navigation, route }) {
                 events[i].querySelector(".fsLocation") == null ? "Away" : events[i].querySelector(".fsLocation").structuredText,
               facility: "Crown",
               type: "Event",
+              points: { Welch: 0, Bird: 0, Sargent: 0, Lewis: 0 },
             });
           }
           setQuickAdd(quickAddList);
@@ -486,7 +497,14 @@ function EventModal({ navigation, route }) {
                     added == null
                       ? setAddedEvents([
                           ...addedEvents,
-                          { title: eventTitle, time: eventTime, location: eventLocation, facility: value, type: type },
+                          {
+                            title: eventTitle,
+                            time: eventTime,
+                            location: eventLocation,
+                            facility: value,
+                            type: type,
+                            points: { Welch: 0, Bird: 0, Sargent: 0, Lewis: 0 },
+                          },
                         ])
                       : added
                       ? (addedEvents[index] = {
@@ -495,6 +513,7 @@ function EventModal({ navigation, route }) {
                           location: eventLocation,
                           facility: value,
                           type: type,
+                          points: { Welch: 0, Bird: 0, Sargent: 0, Lewis: 0 },
                         })
                       : (quickAdd[index] = {
                           title: eventTitle,
@@ -502,6 +521,7 @@ function EventModal({ navigation, route }) {
                           location: eventLocation,
                           facility: value,
                           type: type,
+                          points: { Welch: 0, Bird: 0, Sargent: 0, Lewis: 0 },
                         });
 
                     setVisible(false);
