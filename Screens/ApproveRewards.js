@@ -45,7 +45,7 @@ export default function ApproveRewards({ navigation, route }) {
     loadFont();
     onValue(ref(db, "users/"), (snapshot) => {
       const data = snapshot.val();
-      console.log(data);
+      //console.log(data);
       setRewardInfo(
         Object.values(data).map((u) => {
           return { name: u.name, redeemedPrizes: u.redeemedPrizes, uid: u.uid };

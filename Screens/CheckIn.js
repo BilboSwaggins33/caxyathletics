@@ -19,7 +19,6 @@ import { MontserratFont } from "../assets/fonts";
 import Header from "../Components/Header";
 import EventView from "../Components/EventView";
 import { Portal, ActivityIndicator, Modal } from "react-native-paper";
-import InGame from "./InGame";
 import { coords } from "../Data/coordinates";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
@@ -30,7 +29,6 @@ import { getDatabase, ref, set, onValue, update } from "firebase/database";
 import { getAuth } from "firebase/auth";
 import BackgroundTimer from "react-native-background-timer";
 import Carousel, { Pagination } from "react-native-snap-carousel";
-import BackgroundGeolocation, { Location, Subscription } from "react-native-background-geolocation";
 import SchoolLogos from "../scripts/getLogos/SchoolLogos";
 function inside(point, vs) {
   var x = point[0],
@@ -62,7 +60,6 @@ export default function CheckIn() {
   const [tempCoords, setTempCoords] = useState([]);
   const [events, setEvents] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [enabled, setEnabled] = useState(false);
   const [location, setLocation] = useState("");
   const [housePoints, setHousePoints] = useState({});
   const r = useRef(null);

@@ -12,7 +12,6 @@ import { IconButton } from "react-native-paper";
 import { createStackNavigator } from "@react-navigation/stack";
 import { useSelector, useDispatch } from "react-redux";
 import { resetPoints, setMaxPoints, setPoints } from "../redux/actions";
-import { rewardsList } from "../Data/rewards";
 import { MontserratFont } from "../assets/fonts";
 import * as Font from "expo-font";
 import LinearGradient from "react-native-linear-gradient";
@@ -51,7 +50,7 @@ function Rewards({ navigation }) {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [housePoints, setHousePoints] = useState({});
   const [rewards, setRewards] = useState([]);
-  const { points } = useSelector((state) => state.userReducer);
+  const [points, setPoints] = useState(0);
   const dispatch = useDispatch();
   const db = getDatabase();
   const maxPoints = 1000;
@@ -68,6 +67,9 @@ function Rewards({ navigation }) {
   }
   useEffect(() => {
     //resetAll();
+    onValue(ref(db, "users/" + user.uid), (snapshot) => {
+      setPoints(snapshot.val().points);
+    });
     onValue(ref(db, "house/"), (snapshot) => {
       setHousePoints(snapshot.val());
     });
@@ -187,7 +189,7 @@ function Rewards({ navigation }) {
 }
 
 function RedeemModal({ navigation }) {
-  const { points } = useSelector((state) => state.userReducer);
+  const [points, setPoints] = useState(0);
   const [rewardInfo, setRewardInfo] = useState({});
   const [redeemedInfo, setRedeemedInfo] = useState([]);
   const [visible, setVisible] = useState(false);
@@ -199,12 +201,13 @@ function RedeemModal({ navigation }) {
   //console.log(redeemed);
 
   useEffect(() => {
-    onValue(ref(db, "users/" + user.uid), (snapshot) => {
-      setRedeemedInfo(snapshot.val().redeemedPrizes);
-    });
     onValue(ref(db, "rewards/"), (snapshot) => {
       setRewards(snapshot.val());
       //console.log(snapshot.val());
+    });
+    onValue(ref(db, "users/" + user.uid), (snapshot) => {
+      setRedeemedInfo(snapshot.val().redeemedPrizes);
+      setPoints(snapshot.val().points);
     });
   }, []);
   function Separator() {
@@ -237,7 +240,7 @@ function RedeemModal({ navigation }) {
             <View style={styles.rewardInfoContainer}>
               <Text style={styles.rewardName}>{rewardInfo.name}</Text>
               <Text style={styles.rewardDescription}>{rewardInfo.description}</Text>
-              <Image style={styles.rewardsImage} source={{uri: rewardInfo.image}} resizeMode={"contain"} />
+              <Image style={styles.rewardsImage} source={{ uri: rewardInfo.image }} resizeMode={"contain"} />
               <Text style={styles.rewardsPoints}>Redeem at {rewardInfo?.points} points</Text>
               {points >= rewardInfo.points && !redeemedInfo[rewardInfo.id - 1] ? (
                 <View style={styles.buttonContainer}>
@@ -251,7 +254,7 @@ function RedeemModal({ navigation }) {
                   >
                     <LinearGradient
                       style={styles.linearGradient}
-                      colors={["#fc9d62", "#f78460", "#F37121"]}
+                      colors={["#F37121", "#F37121", "#F37121"]}
                       start={{ x: 0.0, y: 0.25 }}
                       end={{ x: 0.5, y: 1.0 }}
                     >
@@ -279,7 +282,7 @@ function RedeemModal({ navigation }) {
           <Text style={{ fontFamily: "Montserrat-Bold", fontSize: 20, marginRight: 20 }}>Current Points :</Text>
           <LinearGradient
             style={styles.linearGradient}
-            colors={["#F37121", "#f78460", "#fc9d62"]}
+            colors={["#F37121", "#F37121", "#F37121"]}
             start={{ x: 0.0, y: 0.25 }}
             end={{ x: 0.5, y: 1.0 }}
           >

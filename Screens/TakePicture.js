@@ -46,7 +46,7 @@ function TakePicture({ navigation }) {
     setHasPermission(cameraPermission === "authorized");
   };
 
-  if (hasPermission === "denied" || hasPermission === "restricted") {
+  if (hasPermission === "denied" || hasPermission === "irestrictied") {
     return (
       <SafeAreaView>
         <Text>No access to camera</Text>

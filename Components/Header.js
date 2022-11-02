@@ -7,12 +7,16 @@ import { useSelector } from "react-redux";
 import { getDatabase, ref, set, onValue, update } from "firebase/database";
 import * as Font from "expo-font";
 import { MontserratFont } from "../assets/fonts";
+import { getAuth } from "@firebase/auth";
+
 //import { StatusBar } from "expo-status-bar";
 
 export default function Header() {
-  const { points } = useSelector((state) => state.userReducer);
+  const db = getDatabase();
+  const auth = getAuth();
+  const user = auth.currentUser;
   const [fontsLoaded, setFontsLoaded] = useState(false);
-
+  const [points, setPoints] = useState(0);
   const { onScroll, containerPaddingTop, scrollIndicatorInsetTop, translateY } = useCollapsibleHeader({
     navigationOptions: {
       headerStyle: {
@@ -29,6 +33,9 @@ export default function Header() {
   }
 
   useEffect(() => {
+    onValue(ref(db, "users/" + user.uid), (snapshot) => {
+      setPoints(snapshot.val().points);
+    });
     loadFont();
   }, []);
 
