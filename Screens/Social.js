@@ -14,6 +14,7 @@ import moment from "moment";
 import { MontserratFont } from "../assets/fonts";
 import { setUser } from "../redux/actions";
 import { ScrollView } from "react-native-gesture-handler";
+import { Touchable } from "react-native-web";
 const Stack = createStackNavigator();
 
 export default function SocialStack({ navigation }) {
@@ -36,10 +37,13 @@ function Social({ navigation }) {
   const [housePoints, setHousePoints] = useState({});
   const [resetHistory, setResetHistory] = useState([]);
   const [visible, setVisible] = useState(false);
+  const [users, setUsers] = useState([]);
   const { user } = useSelector((state) => state.userReducer);
   const dispatch = useDispatch();
   const db = getDatabase();
   const auth = getAuth();
+  const usersRef = ref(db, "users/");
+
   const { points } = useSelector((state) => state.userReducer);
   async function loadFont() {
     await Font.loadAsync(MontserratFont);
@@ -62,6 +66,9 @@ function Social({ navigation }) {
     });
     onValue(ref(db, "house/"), (snapshot) => {
       setHousePoints(snapshot.val());
+    });
+    onValue(usersRef, (snapshot) => {
+      setUsers(Object.values(snapshot.val()).sort((a, b) => a.points < b.points));
     });
     setCurrentUser(user);
   }, [currentUser]);
@@ -98,42 +105,58 @@ function Social({ navigation }) {
             //<Image style={styles.settingsIcon} source={require("../assets/icons8-settings-48.png")} />
           }
         </View>
-        <View style={styles.profileContainer}>
-          <Image
-            style={{
-              width: 60,
-              height: 60,
-              borderRadius: 100,
-              marginTop: 20,
-            }}
-            source={{ uri: currentUser.photoURL }}
-          />
-          <Text style={{ fontFamily: "Montserrat-Bold", fontSize: 20, marginTop: 10 }}>{currentUser.displayName}</Text>
-          <Text style={{ fontFamily: "Montserrat-Medium", fontSize: 12, marginBottom: 20, color: "gray" }}>
-            {currentUser.email}
-          </Text>
-        </View>
-        <View style={styles.headerContainer}>
-          <Image style={styles.headerIcon} source={require("../assets/icons8-leaderboard-48.png")} />
-          <Text style={styles.headerText}>Stats</Text>
-        </View>
         <TouchableOpacity
           onPress={() => {
             setVisible(true);
           }}
-          style={styles.statsContainer}
         >
-          <Text style={{ fontFamily: "Montserrat-SemiBold", fontSize: 16, marginTop: 5 }}>
-            {resetHistory.map((a) => Object.values(a)[0]).reduce((parSum, a) => parSum + a, 0) + points} Total Points
-          </Text>
-          <Text style={{ fontFamily: "Montserrat-SemiBold", fontSize: 16, marginTop: 5 }}>
-            {redeemedInfo.filter((x) => x == true).length}
-            {redeemedInfo.filter((x) => x == true).length == 1 ? " Total Reward Claimed" : " Total Rewards Claimed"}
-          </Text>
+          <View style={styles.profileContainer}>
+            <Image
+              style={{
+                width: 60,
+                height: 60,
+                borderRadius: 100,
+                marginTop: 20,
+              }}
+              source={{ uri: currentUser.photoURL }}
+            />
+            <Text style={{ fontFamily: "Montserrat-Bold", fontSize: 20, marginTop: 10 }}>{currentUser.displayName}</Text>
+            <Text style={{ fontFamily: "Montserrat-Medium", fontSize: 12, marginBottom: 20, color: "gray" }}>
+              {currentUser.email}
+            </Text>
+          </View>
         </TouchableOpacity>
         <View style={styles.headerContainer}>
           <Image style={styles.headerIcon} source={require("../assets/icons8-trophy-48.png")} />
           <Text style={styles.headerText}>Leaderboard</Text>
+        </View>
+        <TouchableOpacity onPress={() => navigation.navigate("Leaderboard")}>
+          <View style={styles.statsContainer}>
+            <View style={{ flexDirection: "row", justifyContent: "space-evenly", alignItems: "center" }}>
+              <View>
+                <Image style={styles.secondIcon} source={require("../assets/icons8-trophy-60.png")} />
+                <Text style={{ margin: 5 }} adjustsFontSizeToFit={true} numberOfLines={2}>
+                  {users[1]?.name}
+                </Text>
+              </View>
+              <View style={{}}>
+                <Image style={styles.firstIcon} source={require("../assets/icons8-trophy-60.png")} />
+                <Text adjustsFontSizeToFit={true} numberOfLines={2}>
+                  {users[0].name}
+                </Text>
+              </View>
+              <View>
+                <Image style={styles.thirdIcon} source={require("../assets/icons8-trophy-60.png")} />
+                <Text adjustsFontSizeToFit={true} numberOfLines={2}>
+                  {users[1].name}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </TouchableOpacity>
+        <View style={styles.headerContainer}>
+          <Image style={styles.headerIcon} source={require("../assets/icons8-trophy-48.png")} />
+          <Text style={styles.headerText}>House Points</Text>
         </View>
         <TouchableOpacity onPress={() => navigation.navigate("Leaderboard")}>
           <View style={styles.leaderboardContainer}>
@@ -153,6 +176,25 @@ function Social({ navigation }) {
             />
           </View>
         </TouchableOpacity>
+        {/* <View style={styles.headerContainer}>
+          <Image style={styles.headerIcon} source={require("../assets/icons8-leaderboard-48.png")} />
+          <Text style={styles.headerText}>Stats</Text>
+        </View>
+        <TouchableOpacity
+          onPress={() => {
+            setVisible(true);
+          }}
+          style={styles.statsContainer}
+        >
+          <Text style={{ fontFamily: "Montserrat-SemiBold", fontSize: 16, marginTop: 5 }}>
+            {resetHistory.map((a) => Object.values(a)[0]).reduce((parSum, a) => parSum + a, 0) + points} Total Points
+          </Text>
+          <Text style={{ fontFamily: "Montserrat-SemiBold", fontSize: 16, marginTop: 5 }}>
+            {redeemedInfo.filter((x) => x == true).length}
+            {redeemedInfo.filter((x) => x == true).length == 1 ? " Total Reward Claimed" : " Total Rewards Claimed"}
+          </Text>
+        </TouchableOpacity> */}
+
         <SignOutButton />
         <Portal>
           <Modal
@@ -325,6 +367,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F6F4F4",
+    marginBottom: -50,
   },
 
   podiumContainer: {
@@ -548,12 +591,10 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
   },
   statsContainer: {
-    width: width - 50,
     height: 100,
-    marginLeft: 25,
+    marginHorizontal: 25,
     backgroundColor: "white",
     borderRadius: 20,
-    alignItems: "center",
     justifyContent: "center",
     shadowColor: "rgba(0, 0, 0, 0.25)",
     shadowOffset: { width: 0, height: 10 },
