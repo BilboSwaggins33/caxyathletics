@@ -142,14 +142,12 @@ function Social({ navigation }) {
               <View style={{}}>
                 <Image style={styles.firstIcon} source={require("../assets/icons8-trophy-60.png")} />
                 <Text adjustsFontSizeToFit={true} numberOfLines={2}>
-                  {users[0].name}
+                  {users[0]?.name}
                 </Text>
               </View>
               <View>
                 <Image style={styles.thirdIcon} source={require("../assets/icons8-trophy-60.png")} />
-                <Text adjustsFontSizeToFit={true} numberOfLines={2}>
-                  {users[1].name}
-                </Text>
+                <Text adjustsFontSizeToFit={true} numberOfLines={2}></Text>
               </View>
             </View>
           </View>
