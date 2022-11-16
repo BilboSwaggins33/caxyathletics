@@ -11,9 +11,7 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 
 export default function EventHistory({ navigation, route }) {
   const [fontsLoaded, setFontsLoaded] = useState(false);
-  const [housePoints, setHousePoints] = useState({});
   const [visible, setVisible] = useState(false);
-  const [house, setHouse] = useState("");
   const [points, setPoints] = useState("0");
   const [events, setEvents] = useState([]);
   const db = getDatabase();

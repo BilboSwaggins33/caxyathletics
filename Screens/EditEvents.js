@@ -297,7 +297,7 @@ function EventModal({ navigation, route }) {
         if (snapshot.exists()) {
           setAddedEvents(snapshot.val());
         }
-        console.log(e);
+        //console.log(e);
       }
     });
   }

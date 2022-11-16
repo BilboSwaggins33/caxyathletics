@@ -31,13 +31,15 @@ export default function Header() {
     await Font.loadAsync(MontserratFont);
     setFontsLoaded(true);
   }
-
   useEffect(() => {
     onValue(ref(db, "users/" + user.uid), (snapshot) => {
       setPoints(snapshot.val().points);
     });
+
     loadFont();
   }, []);
+
+  useEffect(() => {}, []);
 
   // const db = getDatabase();
   // const ref = db.ref("users");
@@ -60,8 +62,6 @@ export default function Header() {
     );
   }
 }
-
-const HeaderTab = createBottomTabNavigator();
 
 const styles = StyleSheet.create({
   headerContainer: {

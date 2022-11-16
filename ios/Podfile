@@ -39,11 +39,11 @@ target 'caxyathletics' do
 
   pod 'react-native-image-picker', :path => '../node_modules/react-native-image-picker'
 
-  post_install do |installer|
-    react_native_post_install(installer)
-    __apply_Xcode_12_5_M1_post_install_workaround(installer)
+  # post_install do |installer|
+  #   react_native_post_install(installer)
+  #   __apply_Xcode_12_5_M1_post_install_workaround(installer)
 
-  end
+  # end
 
   post_integrate do |installer|
     begin
@@ -59,6 +59,8 @@ target 'caxyathletics' do
   end
 
   post_install do |installer|
+    react_native_post_install(installer)
+    __apply_Xcode_12_5_M1_post_install_workaround(installer)
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
       # some older pods don't support some architectures, anything over iOS 11 resolves that

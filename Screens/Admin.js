@@ -7,7 +7,6 @@ import { MontserratFont } from "../assets/fonts";
 import ApprovePictures from "./ApprovePictures";
 import ApproveRewards from "./ApproveRewards";
 import EditEvents from "./EditEvents";
-import EditPoints from "./EditPoints";
 import EditRewards from "./EditRewards";
 import EventHistory from "./EventHistory";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
@@ -20,7 +19,6 @@ export default function AdminStack({ navigation, route }) {
       <Stack.Screen name="ApprovePictures" component={ApprovePictures} />
       <Stack.Screen name="ApproveRewards" component={ApproveRewards} />
       <Stack.Screen name="EditEvents" component={EditEvents} />
-      <Stack.Screen name="EditPoints" component={EditPoints} />
       <Stack.Screen name="EditRewards" component={EditRewards} />
       <Stack.Screen name="EventHistory" component={EventHistory} />
     </Stack.Navigator>
@@ -43,7 +41,7 @@ function Admin({ navigation, route }) {
   } else {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={{ margin: 20, flexDirection: "row", alignItems: "center" }}>
+        <View style={{ marginHorizontal: 20, marginVertical: 10, flexDirection: "row", alignItems: "center" }}>
           <IconButton
             icon="arrow-left"
             onPress={() => {
@@ -88,18 +86,6 @@ function Admin({ navigation, route }) {
             mode="contained"
           >
             Edit Events
-          </Button>
-          <Button
-            onPress={() => {
-              navigation.navigate("EditPoints");
-            }}
-            uppercase={false}
-            icon="hand-coin"
-            style={{ backgroundColor: "#F37121", width: 250, margin: 20 }}
-            labelStyle={{ fontFamily: "Montserrat-Bold" }}
-            mode="contained"
-          >
-            Edit Points
           </Button>
           <Button
             onPress={() => {

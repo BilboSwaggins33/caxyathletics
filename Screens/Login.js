@@ -35,7 +35,7 @@ export default function Login() {
       signInWithCredential(auth, credential).then((result) => {
         if (result.user.email.includes("@students.lfanet.org") || result.user.email.includes("@lfanet.org")) {
           const db = getDatabase();
-          console.log("result", result.user);
+          //console.log("result", result.user);
           onValue(ref(db, "users/" + result.user.uid), (snapshot) => {
             //console.log("user info:", snapshot.val());
             if (snapshot.exists()) {
@@ -52,8 +52,8 @@ export default function Login() {
                 email: result.user.email,
                 profileUrl: result.user.photoURL,
                 points: 0,
-                redeemedPrizes: Array(rewardsList.length).fill(false),
-                Resets: { [moment()]: 0 },
+                totalPoints: 0,
+                totalMinutes: 0,
               });
             }
           });

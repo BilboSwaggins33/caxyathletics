@@ -34,7 +34,6 @@ export default function App() {
         get(ref(db, "users/" + u.uid)).then((snapshot) => {
           //console.log(snapshot.val().points);
           dispatch(setPoints(snapshot.val().points, 0));
-          //console.log(snapshot.val().redeemedPrizes);
         });
         //console.log(user.email)
       } else {

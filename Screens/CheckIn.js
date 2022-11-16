@@ -24,7 +24,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
 import { useIsFocused } from "@react-navigation/native";
 import { useSelector, useDispatch } from "react-redux";
-import { setMaxPoints, setPoints, setLocation } from "../redux/actions";
 import { getDatabase, ref, set, onValue, update } from "firebase/database";
 import { getAuth } from "firebase/auth";
 import BackgroundTimer from "react-native-background-timer";
@@ -48,11 +47,9 @@ LogBox.ignoreLogs([
   "ViewPropTypes will be removed from React Native. Migrate to ViewPropTypes exported from 'deprecated-react-native-prop-types'.",
 ]);
 export default function CheckIn() {
-  const dispatch = useDispatch();
   const db = getDatabase();
   const isFocused = useIsFocused();
   const auth = getAuth();
-  const { points } = useSelector((state) => state.userReducer);
   const [isLoading, setIsLoading] = useState(false);
   const [inGame, setInGame] = useState(false);
   const [fontsLoaded, setFontsLoaded] = useState(false);
@@ -61,11 +58,11 @@ export default function CheckIn() {
   const [events, setEvents] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [location, setLocation] = useState("");
-  const [housePoints, setHousePoints] = useState({});
+  const [points, setPoints] = useState(0);
+  const [minutes, setMinutes] = useState(0);
+  const [pointScaling, setPointScaling] = useState(0);
   const r = useRef(null);
-  const maxPoints = 1000;
   const user = auth.currentUser;
-  const houses = { 23: "Bird", 24: "Sargent", 25: "Welch", 26: "Lewis" };
 
   async function loadFont() {
     await Font.loadAsync(MontserratFont);
@@ -106,9 +103,16 @@ export default function CheckIn() {
           ]);
         }
       });
-      onValue(ref(db, "house/"), (snapshot) => {
-        setHousePoints(snapshot.val());
+
+      onValue(ref(db, "users/" + user.uid), (snapshot) => {
+        setPoints(snapshot.val().points);
+        setMinutes(snapshot.val().totalMinutes);
       });
+
+      onValue(ref(db, "scale/"), (snapshot) => {
+        setPointScaling(snapshot.val().minutes);
+      });
+
       if (events.length != 0) {
         checkOpponents(events);
       }
@@ -228,7 +232,7 @@ export default function CheckIn() {
     locationSubscription = RNLocation.subscribeToLocationUpdates((locations) => {
       //console.log(locations[0].latitude, locations[0].longitude);
       if (inside([locations[0].latitude, locations[0].longitude], coords[location].borders)) {
-        console.log("inside");
+        //console.log("inside");
       } else {
         CheckInGame(false);
       }
@@ -266,27 +270,19 @@ export default function CheckIn() {
         .reverse()
         .reduce((el, a, index) => el + Number(a) * Math.pow(60, index), 0);
       console.log("seconds elapsed:", seconds);
-      var points = Math.round(seconds / 60);
-      changePoints(points);
-      updatePoints(points);
+      var p = Math.round(seconds / (pointScaling * 60));
+      setPoints(points + p);
+      setMinutes(minutes + Math.round(seconds / 60));
+      updatePoints(p);
+      updateMinutes(minutes + Math.round(seconds / 60));
       transition(1.2, 1);
       setActiveIndex(0);
-      points == 1 ? Alert.alert("You earned " + points + " point!") : Alert.alert("You earned " + points + " points!");
+      p == 1 ? Alert.alert("You earned " + points + " point!") : Alert.alert("You earned " + points + " points!");
       setInGame(x);
       _stopUpdatingLocation();
     }
   };
 
-  function changePoints(n) {
-    //console.log("changed points by", n);
-    let total = points + n;
-    if (total < maxPoints) {
-      //console.log(total);
-      dispatch(setPoints(points, n));
-    } else {
-      dispatch(setMaxPoints(maxPoints));
-    }
-  }
   async function checkLocation() {
     setIsLoading(true);
     setTempCoords([50, 50]);
@@ -337,24 +333,21 @@ export default function CheckIn() {
   }
 
   function updatePoints(n) {
-    let total = points + n;
-    if (events[activeIndex].type == "Pack the House") {
-      update(ref(db, "house/" + houses[user.displayName.slice(-2)]), {
-        points: housePoints[houses[user.displayName.slice(-2)]]?.points + n,
-      });
-    }
-    if (total < maxPoints) {
-      update(ref(db, "users/" + user.uid), {
-        points: total,
-      }).then(() => {
-        console.log("points saved successfully");
-      });
-    } else {
-      update(ref(db, "users/" + user.uid), {
-        points: maxPoints,
-      });
-    }
+    update(ref(db, "users/" + user.uid), {
+      points: n,
+    }).then(() => {
+      console.log("points saved successfully");
+    });
   }
+
+  function updateMinutes(n) {
+    update(ref(db, "users/" + user.uid), {
+      minutes: n,
+    }).then(() => {
+      console.log("minutes saved successfully");
+    });
+  }
+
   const renderItem = useCallback(({ item, index }) => {
     return (
       <EventView
